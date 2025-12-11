@@ -161,7 +161,8 @@ impl OpenThreadBuilder {
     /// Arguments:
     /// - `out_path`: Path to use as a build space
     /// - `copy_path`: Optional path to copy the generated libraries to
-    pub fn compile(&self, out_path: &Path, copy_path: Option<&Path>) -> Result<PathBuf> {
+    /// - `ftd`: Whether to build FTD (Full Thread Device) instead of MTD (Minimal Thread Device)
+    pub fn compile(&self, out_path: &Path, copy_path: Option<&Path>, ftd: bool) -> Result<PathBuf> {
         let target_dir = out_path.join("openthread").join("build");
         std::fs::create_dir_all(&target_dir)?;
 
@@ -171,14 +172,14 @@ impl OpenThreadBuilder {
         std::fs::create_dir_all(lib_dir)?;
 
         // Compile OpenThread and generate libraries to link against
-        log::info!("Compiling OpenThread");
+        log::info!("Compiling OpenThread in {} mode", if ftd { "FTD" } else { "MTD" });
 
         let mut config = self.cmake_configurer.configure(Some(lib_dir));
 
         config
             .define("OT_LOG_LEVEL", "NOTE")
-            .define("OT_FTD", "OFF")
-            .define("OT_MTD", "ON")
+            .define("OT_FTD", if ftd { "ON" } else { "OFF" })
+            .define("OT_MTD", if ftd { "OFF" } else { "ON" })
             .define("OT_RCP", "OFF")
             .define("OT_TCP", "OFF")
             .define("OT_APP_CLI", "OFF")

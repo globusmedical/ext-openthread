@@ -18,6 +18,7 @@ fn main() -> Result<()> {
     let target = env::var("TARGET").unwrap();
 
     let force_esp_riscv_toolchain = env::var("CARGO_FEATURE_FORCE_ESP_RISCV_TOOLCHAIN").is_ok();
+    let ftd = env::var("CARGO_FEATURE_FTD").is_ok();
 
     let pregen_bindings = env::var("CARGO_FEATURE_FORCE_GENERATE_BINDINGS").is_err();
     let pregen_bindings_rs_file = crate_root_path
@@ -26,9 +27,23 @@ fn main() -> Result<()> {
         .join(format!("{target}.rs"));
     let pregen_libs_dir = crate_root_path.join("libs").join(&target);
 
-    let dirs = if pregen_bindings && pregen_bindings_rs_file.exists() {
-        // Use the pre-generated bindings
-        Some((pregen_bindings_rs_file, pregen_libs_dir))
+    let dirs = if pregen_bindings && pregen_bindings_rs_file.exists() && pregen_libs_dir.exists() {
+        // Check if we have the right libraries (FTD vs MTD)
+        let has_ftd_lib = pregen_libs_dir.join("libopenthread-ftd.a").exists();
+        let has_mtd_lib = pregen_libs_dir.join("libopenthread-mtd.a").exists();
+
+        let libs_match = (ftd && has_ftd_lib) || (!ftd && has_mtd_lib);
+
+        if libs_match {
+            // Use the pre-generated bindings and libraries
+            Some((pregen_bindings_rs_file, pregen_libs_dir))
+        } else {
+            // Libraries don't match what we need, fall through to on-the-fly build
+            log::warn!(
+                "Pre-built libraries don't match requested mode (FTD={ftd}), will build on-the-fly"
+            );
+            None
+        }
     } else if target.ends_with("-espidf") {
         // Nothing to do for ESP-IDF, `esp-idf-sys` will do everything for us
         None
@@ -46,7 +61,7 @@ fn main() -> Result<()> {
             force_esp_riscv_toolchain,
         );
 
-        let libs_dir = builder.compile(&out, None)?;
+        let libs_dir = builder.compile(&out, None, ftd)?;
         let bindings = builder.generate_bindings(&out, None)?;
 
         Some((bindings, libs_dir))

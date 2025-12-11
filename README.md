@@ -47,14 +47,19 @@ Examples of GCC toolchains that are known to work fine:
 
 ## Features
 
-- MTD (Minimal Thread Device) functionality
+- **MTD (Minimal Thread Device) functionality** - Default mode, low memory footprint
+- **FTD (Full Thread Device) functionality** - Optional feature, enables Router/Leader roles and mesh networking
 - Optional integration with [`embassy-net`]() and [`edge-nal`]()
 - Out of the box support for the IEEE 802.15.4 radio in [Espressif](openthread/src/esp.rs) and [Nordic Semiconductor](openthread/src/nrf.rs) chips
+
+### FTD vs MTD
+
+- **MTD (Minimal Thread Device)**: Default mode, acts as an end device (child) in the network. Lower memory usage (~30-50KB RAM). Cannot route traffic or accept child devices.
+- **FTD (Full Thread Device)**: Can act as Router or Leader, form mesh networks, and accept child devices. Requires more memory (~80-150KB RAM). Enable with the `ftd` feature flag.
 
 ## Next
 
 - Sleepy end-device
-- FTD (Full Thread Device) functionality
 
 ## Non-Goals
 
@@ -63,6 +68,71 @@ Examples of GCC toolchains that are known to work fine:
 ## Status
 
 The examples (native OpenThread UDP sockets; `embassy-net` integration; SRP) build and run on Espressif MCUs, and on the NRF52840.
+
+Both MTD (Minimal Thread Device) and FTD (Full Thread Device) modes are supported.
+
+## Using FTD Mode
+
+To build with FTD (Full Thread Device) support instead of the default MTD mode:
+
+### In your Cargo.toml
+
+```toml
+[dependencies]
+openthread = { version = "0.1", features = ["ftd", "embassy-nrf"] }
+```
+
+### Building Examples
+
+```bash
+# Build nRF FTD example
+cd examples/nrf
+cargo build --release --bin ftd_basic --features ftd
+
+# Flash to nRF52840-DK
+probe-rs run --chip nRF52840_xxAA --release --bin ftd_basic --features ftd
+```
+
+### FTD-Specific APIs
+
+When the `ftd` feature is enabled, additional APIs become available:
+
+```rust
+// Configure maximum children
+ot.set_max_allowed_children(10)?;
+
+// Monitor connected children
+ot.children(|child| {
+    info!("Child RLOC16: 0x{:04x}, RSSI: {}", child.rloc16, child.last_rssi);
+    Ok(())
+})?;
+
+// Monitor neighboring routers
+ot.neighbors(|neighbor| {
+    info!("Neighbor RLOC16: 0x{:04x}, LQI: {}", neighbor.rloc16, neighbor.link_quality_in);
+    Ok(())
+})?;
+
+// Get specific router information
+let router_info = ot.get_router_info(router_id)?;
+```
+
+### Memory Requirements
+
+- **MTD**: ~30-50 KB RAM
+- **FTD**: ~80-150 KB RAM (depending on configuration)
+
+For devices with limited RAM, reduce the maximum number of children:
+
+```rust
+ot.set_max_allowed_children(10)?; // Default is usually 32
+```
+
+### Building FTD Libraries
+
+Pre-built FTD libraries are provided for nRF targets (thumbv7em-none-eabi, thumbv6m-none-eabi).
+
+If you need to rebuild them or build for other targets, see [BUILD_FTD_LIBS.md](BUILD_FTD_LIBS.md).
 
 ## Testing
 

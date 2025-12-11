@@ -33,6 +33,8 @@ pub use nat64::*;
 pub use netdata::*;
 pub use openthread_sys as sys;
 pub use radio::*;
+#[cfg(feature = "ftd")]
+pub use router::*;
 pub use scan::*;
 pub use settings::*;
 #[cfg(feature = "srp")]
@@ -56,6 +58,8 @@ mod netdata;
 pub mod nrf;
 mod platform;
 mod radio;
+#[cfg(feature = "ftd")]
+mod router;
 mod scan;
 mod settings;
 mod signal;
@@ -553,6 +557,154 @@ impl<'a> OpenThread<'a> {
         trace!("Transmitted IPv6 packet: {}", Bytes(packet));
 
         Ok(())
+    }
+
+    /// Get information about a child device by index (FTD only)
+    ///
+    /// This method is only available when the `ftd` feature is enabled.
+    ///
+    /// # Arguments
+    /// * `index` - Child index
+    ///
+    /// # Returns
+    /// Child information if found
+    #[cfg(feature = "ftd")]
+    pub fn get_child_info(&self, index: u16) -> Result<ChildInfo, OtError> {
+        let mut ot = self.activate();
+        let state = ot.state();
+        router::RouterOps::get_child_info_by_index(state.ot.instance, index)
+    }
+
+    /// Iterate over all child devices (FTD only)
+    ///
+    /// This method is only available when the `ftd` feature is enabled.
+    ///
+    /// # Arguments
+    /// * `f` - Callback function called for each child
+    #[cfg(feature = "ftd")]
+    pub fn children<F>(&self, mut f: F) -> Result<(), OtError>
+    where
+        F: FnMut(ChildInfo) -> Result<(), OtError>,
+    {
+        let mut ot = self.activate();
+        let state = ot.state();
+
+        let mut index = 0;
+        loop {
+            match router::RouterOps::get_child_info_by_index(state.ot.instance, index) {
+                Ok(child) => {
+                    f(child)?;
+                    index += 1;
+                }
+                Err(_) => break,
+            }
+        }
+        Ok(())
+    }
+
+    /// Get information about a neighboring device by index (FTD only)
+    ///
+    /// This method is only available when the `ftd` feature is enabled.
+    ///
+    /// # Arguments
+    /// * `index` - Neighbor index
+    ///
+    /// # Returns
+    /// Neighbor information if found
+    #[cfg(feature = "ftd")]
+    pub fn get_neighbor_info(&self, index: u16) -> Result<NeighborInfo, OtError> {
+        let mut ot = self.activate();
+        let state = ot.state();
+        router::RouterOps::get_neighbor_info_by_index(state.ot.instance, index)
+    }
+
+    /// Iterate over all neighboring devices (FTD only)
+    ///
+    /// This method is only available when the `ftd` feature is enabled.
+    ///
+    /// # Arguments
+    /// * `f` - Callback function called for each neighbor
+    #[cfg(feature = "ftd")]
+    pub fn neighbors<F>(&self, mut f: F) -> Result<(), OtError>
+    where
+        F: FnMut(NeighborInfo) -> Result<(), OtError>,
+    {
+        let mut ot = self.activate();
+        let state = ot.state();
+
+        let mut index = 0;
+        loop {
+            match router::RouterOps::get_neighbor_info_by_index(state.ot.instance, index) {
+                Ok(neighbor) => {
+                    f(neighbor)?;
+                    index += 1;
+                }
+                Err(_) => break,
+            }
+        }
+        Ok(())
+    }
+
+    /// Get information about a router (FTD only)
+    ///
+    /// This method is only available when the `ftd` feature is enabled.
+    ///
+    /// # Arguments
+    /// * `router_id` - Router ID
+    ///
+    /// # Returns
+    /// Router information
+    #[cfg(feature = "ftd")]
+    pub fn get_router_info(&self, router_id: u16) -> Result<RouterInfo, OtError> {
+        let mut ot = self.activate();
+        let state = ot.state();
+        router::RouterOps::get_router_info(state.ot.instance, router_id)
+    }
+
+    /// Get the maximum number of children allowed (FTD only)
+    ///
+    /// This method is only available when the `ftd` feature is enabled.
+    #[cfg(feature = "ftd")]
+    pub fn get_max_allowed_children(&self) -> u16 {
+        let mut ot = self.activate();
+        let state = ot.state();
+        router::RouterOps::get_max_allowed_children(state.ot.instance)
+    }
+
+    /// Set the maximum number of children allowed (FTD only)
+    ///
+    /// This method is only available when the `ftd` feature is enabled.
+    ///
+    /// # Arguments
+    /// * `max_children` - Maximum number of children (typically 10-32 for FTD)
+    #[cfg(feature = "ftd")]
+    pub fn set_max_allowed_children(&self, max_children: u16) -> Result<(), OtError> {
+        let mut ot = self.activate();
+        let state = ot.state();
+        router::RouterOps::set_max_allowed_children(state.ot.instance, max_children)
+    }
+
+    /// Get the maximum number of IP addresses per child (FTD only)
+    ///
+    /// This method is only available when the `ftd` feature is enabled.
+    #[cfg(feature = "ftd")]
+    pub fn get_max_child_ip_addresses(&self) -> u8 {
+        let mut ot = self.activate();
+        let state = ot.state();
+        router::RouterOps::get_max_child_ip_addresses(state.ot.instance)
+    }
+
+    /// Set the maximum number of IP addresses per child (FTD only)
+    ///
+    /// This method is only available when the `ftd` feature is enabled.
+    ///
+    /// # Arguments
+    /// * `max_ip_addresses` - Maximum number of IP addresses per child
+    #[cfg(feature = "ftd")]
+    pub fn set_max_child_ip_addresses(&self, max_ip_addresses: u8) -> Result<(), OtError> {
+        let mut ot = self.activate();
+        let state = ot.state();
+        router::RouterOps::set_max_child_ip_addresses(state.ot.instance, max_ip_addresses)
     }
 
     /// Initialize the OpenThread state, by:

@@ -13,6 +13,8 @@ rust-version = "1.84"
 
 [features]
 default = []
+# Enable FTD (Full Thread Device) support instead of MTD (Minimal Thread Device)
+ftd = []
 # Always generate the bindings during build, even if pre-built bindings for the build target are available
 force-generate-bindings = []
 # Force the use of the Espressif Riscv GCC toolchain, if the target is a `riscv32*-` target

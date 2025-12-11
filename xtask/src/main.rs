@@ -30,6 +30,10 @@ enum Commands {
         #[arg(short = 'e', long)]
         force_esp_riscv_toolchain: bool,
 
+        /// Build FTD (Full Thread Device) libraries instead of MTD (Minimal Thread Device)
+        #[arg(short = 'f', long)]
+        ftd: bool,
+
         /// Target triple for which to generate bindings and `.a` libraries
         target: String,
     },
@@ -52,6 +56,7 @@ fn main() -> Result<()> {
     if let Some(Commands::Gen {
         target,
         force_esp_riscv_toolchain,
+        ftd,
     }) = args.command
     {
         let builder = builder::OpenThreadBuilder::new(
@@ -70,6 +75,7 @@ fn main() -> Result<()> {
         builder.compile(
             out.path(),
             Some(&sys_crate_root_path.join("libs").join(&target)),
+            ftd,
         )?;
 
         let out = TempDir::new("openthread-sys-bindings")?;
