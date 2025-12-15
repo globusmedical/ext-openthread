@@ -88,6 +88,7 @@ fn main() -> Result<()> {
                     .join("include")
                     .join(format!("{target}.rs")),
             ),
+            ftd,
         )?;
     }
 

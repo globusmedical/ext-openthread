@@ -57,10 +57,13 @@ impl OpenThreadBuilder {
     ///
     /// Arguments:
     /// - `out_path`: Path to write the bindings to
+    /// - `copy_file_path`: Optional path to copy the generated bindings to
+    /// - `ftd`: Whether to generate FTD (Full Thread Device) bindings instead of MTD (Minimal Thread Device)
     pub fn generate_bindings(
         &self,
         out_path: &Path,
         copy_file_path: Option<&Path>,
+        ftd: bool,
     ) -> Result<PathBuf> {
         log::info!("Generating OpenThread bindings");
 
@@ -110,6 +113,13 @@ impl OpenThreadBuilder {
                 "-I{}",
                 canon(&self.crate_root_path.join("openthread").join("include"))
             )]);
+
+        // Define OPENTHREAD_FTD or OPENTHREAD_MTD for bindgen
+        if ftd {
+            builder = builder.clang_arg("-DOPENTHREAD_FTD=1");
+        } else {
+            builder = builder.clang_arg("-DOPENTHREAD_MTD=1");
+        }
 
         if self.short_enums() {
             builder = builder.clang_arg("-fshort-enums");

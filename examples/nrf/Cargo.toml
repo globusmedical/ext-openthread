@@ -27,6 +27,7 @@ overflow-checks = false
 
 [features]
 default = []
+ftd = ["openthread/ftd"]
 
 [dependencies]
 cortex-m = { version = "0.7.6", features = ["inline-asm", "critical-section-single-core"] }
@@ -64,4 +65,10 @@ harness = false
 path = "./src/bin/srp.rs"
 name = "srp"
 #required-features=["srp"]
+harness = false
+
+[[bin]]
+path = "./src/bin/ftd_basic.rs"
+name = "ftd_basic"
+required-features = ["ftd"]
 harness = false

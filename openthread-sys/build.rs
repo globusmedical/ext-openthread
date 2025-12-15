@@ -62,7 +62,7 @@ fn main() -> Result<()> {
         );
 
         let libs_dir = builder.compile(&out, None, ftd)?;
-        let bindings = builder.generate_bindings(&out, None)?;
+        let bindings = builder.generate_bindings(&out, None, ftd)?;
 
         Some((bindings, libs_dir))
     };

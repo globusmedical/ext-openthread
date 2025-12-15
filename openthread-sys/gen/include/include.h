@@ -1,6 +1,7 @@
 #include "openthread/instance.h"
 #include "openthread/udp.h"
 #include "openthread/thread.h"
+#include "openthread/thread_ftd.h"
 #include "openthread/tasklet.h"
 #include "openthread/nat64.h"
 #include "openthread/netdata.h"

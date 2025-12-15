@@ -220,10 +220,9 @@ pub const _REENT_SIGNAL_SIZE: u32 = 24;
 pub const EXIT_FAILURE: u32 = 1;
 pub const EXIT_SUCCESS: u32 = 0;
 pub const RAND_MAX: u32 = 2147483647;
+pub const __bool_true_false_are_defined: u32 = 1;
 pub const true_: u32 = 1;
 pub const false_: u32 = 0;
-pub const __bool_true_false_are_defined: u32 = 1;
-pub const __GNUC_VA_LIST: u32 = 1;
 pub const __int20: u32 = 2;
 pub const __int20__: u32 = 2;
 pub const __INT8: &[u8; 3] = b"hh\0";
@@ -353,6 +352,7 @@ pub const OT_NETWORK_MAX_ROUTER_ID: u32 = 62;
 pub const OT_NEIGHBOR_INFO_ITERATOR_INIT: u32 = 0;
 pub const OT_JOINER_ADVDATA_MAX_LENGTH: u32 = 64;
 pub const OT_DURATION_STRING_SIZE: u32 = 21;
+pub const OT_CHILD_IP6_ADDRESS_ITERATOR_INIT: u32 = 0;
 pub const OT_IP4_ADDRESS_SIZE: u32 = 4;
 pub const OT_IP4_ADDRESS_STRING_SIZE: u32 = 17;
 pub const OT_IP4_CIDR_STRING_SIZE: u32 = 20;
@@ -1378,7 +1378,10 @@ unsafe extern "C" {
 }
 unsafe extern "C" {
     #[must_use]
-    pub fn aligned_alloc(arg1: usize, arg2: usize) -> *mut ::core::ffi::c_void;
+    pub fn aligned_alloc(
+        arg1: ::core::ffi::c_uint,
+        arg2: ::core::ffi::c_uint,
+    ) -> *mut ::core::ffi::c_void;
 }
 unsafe extern "C" {
     pub fn at_quick_exit(
@@ -1475,8 +1478,8 @@ unsafe extern "C" {
     /// @returns  A string representation of an otError.
     pub fn otThreadErrorToString(aError: otError) -> *const ::core::ffi::c_char;
 }
-pub type va_list = u32;
 pub type __gnuc_va_list = u32;
+pub type va_list = u32;
 pub type intmax_t = __intmax_t;
 pub type uintmax_t = __uintmax_t;
 pub type int_least8_t = __int_least8_t;
@@ -10593,6 +10596,1290 @@ unsafe extern "C" {
         aDuration: u32,
         aBuffer: *mut ::core::ffi::c_char,
         aSize: u16,
+    );
+}
+/// Holds diagnostic information for a Thread Child
+#[repr(C)]
+#[derive(Default, Copy, Clone)]
+pub struct otChildInfo {
+    ///< IEEE 802.15.4 Extended Address
+    pub mExtAddress: otExtAddress,
+    ///< Timeout
+    pub mTimeout: u32,
+    ///< Seconds since last heard
+    pub mAge: u32,
+    ///< Seconds since attach (requires `OPENTHREAD_CONFIG_UPTIME_ENABLE`)
+    pub mConnectionTime: u64,
+    ///< RLOC16
+    pub mRloc16: u16,
+    ///< Child ID
+    pub mChildId: u16,
+    ///< Network Data Version
+    pub mNetworkDataVersion: u8,
+    ///< Link Quality In
+    pub mLinkQualityIn: u8,
+    ///< Average RSSI
+    pub mAverageRssi: i8,
+    ///< Last observed RSSI
+    pub mLastRssi: i8,
+    ///< Frame error rate (0xffff->100%). Requires error tracking feature.
+    pub mFrameErrorRate: u16,
+    ///< (IPv6) msg error rate (0xffff->100%). Requires error tracking feature.
+    pub mMessageErrorRate: u16,
+    ///< Number of queued messages for the child.
+    pub mQueuedMessageCnt: u16,
+    ///< Supervision interval (in seconds).
+    pub mSupervisionInterval: u16,
+    ///< MLE version
+    pub mVersion: u8,
+    pub _bitfield_align_1: [u8; 0],
+    pub _bitfield_1: __BindgenBitfieldUnit<[u8; 1usize]>,
+    pub __bindgen_padding_0: [u16; 3usize],
+}
+impl otChildInfo {
+    #[inline]
+    pub fn mRxOnWhenIdle(&self) -> bool {
+        unsafe { ::core::mem::transmute(self._bitfield_1.get(0usize, 1u8) as u8) }
+    }
+    #[inline]
+    pub fn set_mRxOnWhenIdle(&mut self, val: bool) {
+        unsafe {
+            let val: u8 = ::core::mem::transmute(val);
+            self._bitfield_1.set(0usize, 1u8, val as u64)
+        }
+    }
+    #[inline]
+    pub unsafe fn mRxOnWhenIdle_raw(this: *const Self) -> bool {
+        unsafe {
+            ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+                ::core::ptr::addr_of!((*this)._bitfield_1),
+                0usize,
+                1u8,
+            ) as u8)
+        }
+    }
+    #[inline]
+    pub unsafe fn set_mRxOnWhenIdle_raw(this: *mut Self, val: bool) {
+        unsafe {
+            let val: u8 = ::core::mem::transmute(val);
+            <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+                ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+                0usize,
+                1u8,
+                val as u64,
+            )
+        }
+    }
+    #[inline]
+    pub fn mFullThreadDevice(&self) -> bool {
+        unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u8) }
+    }
+    #[inline]
+    pub fn set_mFullThreadDevice(&mut self, val: bool) {
+        unsafe {
+            let val: u8 = ::core::mem::transmute(val);
+            self._bitfield_1.set(1usize, 1u8, val as u64)
+        }
+    }
+    #[inline]
+    pub unsafe fn mFullThreadDevice_raw(this: *const Self) -> bool {
+        unsafe {
+            ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+                ::core::ptr::addr_of!((*this)._bitfield_1),
+                1usize,
+                1u8,
+            ) as u8)
+        }
+    }
+    #[inline]
+    pub unsafe fn set_mFullThreadDevice_raw(this: *mut Self, val: bool) {
+        unsafe {
+            let val: u8 = ::core::mem::transmute(val);
+            <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+                ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+                1usize,
+                1u8,
+                val as u64,
+            )
+        }
+    }
+    #[inline]
+    pub fn mFullNetworkData(&self) -> bool {
+        unsafe { ::core::mem::transmute(self._bitfield_1.get(2usize, 1u8) as u8) }
+    }
+    #[inline]
+    pub fn set_mFullNetworkData(&mut self, val: bool) {
+        unsafe {
+            let val: u8 = ::core::mem::transmute(val);
+            self._bitfield_1.set(2usize, 1u8, val as u64)
+        }
+    }
+    #[inline]
+    pub unsafe fn mFullNetworkData_raw(this: *const Self) -> bool {
+        unsafe {
+            ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+                ::core::ptr::addr_of!((*this)._bitfield_1),
+                2usize,
+                1u8,
+            ) as u8)
+        }
+    }
+    #[inline]
+    pub unsafe fn set_mFullNetworkData_raw(this: *mut Self, val: bool) {
+        unsafe {
+            let val: u8 = ::core::mem::transmute(val);
+            <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+                ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+                2usize,
+                1u8,
+                val as u64,
+            )
+        }
+    }
+    #[inline]
+    pub fn mIsStateRestoring(&self) -> bool {
+        unsafe { ::core::mem::transmute(self._bitfield_1.get(3usize, 1u8) as u8) }
+    }
+    #[inline]
+    pub fn set_mIsStateRestoring(&mut self, val: bool) {
+        unsafe {
+            let val: u8 = ::core::mem::transmute(val);
+            self._bitfield_1.set(3usize, 1u8, val as u64)
+        }
+    }
+    #[inline]
+    pub unsafe fn mIsStateRestoring_raw(this: *const Self) -> bool {
+        unsafe {
+            ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+                ::core::ptr::addr_of!((*this)._bitfield_1),
+                3usize,
+                1u8,
+            ) as u8)
+        }
+    }
+    #[inline]
+    pub unsafe fn set_mIsStateRestoring_raw(this: *mut Self, val: bool) {
+        unsafe {
+            let val: u8 = ::core::mem::transmute(val);
+            <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+                ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+                3usize,
+                1u8,
+                val as u64,
+            )
+        }
+    }
+    #[inline]
+    pub fn mIsCslSynced(&self) -> bool {
+        unsafe { ::core::mem::transmute(self._bitfield_1.get(4usize, 1u8) as u8) }
+    }
+    #[inline]
+    pub fn set_mIsCslSynced(&mut self, val: bool) {
+        unsafe {
+            let val: u8 = ::core::mem::transmute(val);
+            self._bitfield_1.set(4usize, 1u8, val as u64)
+        }
+    }
+    #[inline]
+    pub unsafe fn mIsCslSynced_raw(this: *const Self) -> bool {
+        unsafe {
+            ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+                ::core::ptr::addr_of!((*this)._bitfield_1),
+                4usize,
+                1u8,
+            ) as u8)
+        }
+    }
+    #[inline]
+    pub unsafe fn set_mIsCslSynced_raw(this: *mut Self, val: bool) {
+        unsafe {
+            let val: u8 = ::core::mem::transmute(val);
+            <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+                ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+                4usize,
+                1u8,
+                val as u64,
+            )
+        }
+    }
+    #[inline]
+    pub fn new_bitfield_1(
+        mRxOnWhenIdle: bool,
+        mFullThreadDevice: bool,
+        mFullNetworkData: bool,
+        mIsStateRestoring: bool,
+        mIsCslSynced: bool,
+    ) -> __BindgenBitfieldUnit<[u8; 1usize]> {
+        let mut __bindgen_bitfield_unit: __BindgenBitfieldUnit<[u8; 1usize]> = Default::default();
+        __bindgen_bitfield_unit.set(0usize, 1u8, {
+            let mRxOnWhenIdle: u8 = unsafe { ::core::mem::transmute(mRxOnWhenIdle) };
+            mRxOnWhenIdle as u64
+        });
+        __bindgen_bitfield_unit.set(1usize, 1u8, {
+            let mFullThreadDevice: u8 = unsafe { ::core::mem::transmute(mFullThreadDevice) };
+            mFullThreadDevice as u64
+        });
+        __bindgen_bitfield_unit.set(2usize, 1u8, {
+            let mFullNetworkData: u8 = unsafe { ::core::mem::transmute(mFullNetworkData) };
+            mFullNetworkData as u64
+        });
+        __bindgen_bitfield_unit.set(3usize, 1u8, {
+            let mIsStateRestoring: u8 = unsafe { ::core::mem::transmute(mIsStateRestoring) };
+            mIsStateRestoring as u64
+        });
+        __bindgen_bitfield_unit.set(4usize, 1u8, {
+            let mIsCslSynced: u8 = unsafe { ::core::mem::transmute(mIsCslSynced) };
+            mIsCslSynced as u64
+        });
+        __bindgen_bitfield_unit
+    }
+}
+pub type otChildIp6AddressIterator = u16;
+pub const otCacheEntryState_OT_CACHE_ENTRY_STATE_CACHED: otCacheEntryState = 0;
+pub const otCacheEntryState_OT_CACHE_ENTRY_STATE_SNOOPED: otCacheEntryState = 1;
+pub const otCacheEntryState_OT_CACHE_ENTRY_STATE_QUERY: otCacheEntryState = 2;
+pub const otCacheEntryState_OT_CACHE_ENTRY_STATE_RETRY_QUERY: otCacheEntryState = 3;
+/// Defines the EID cache entry state.
+pub type otCacheEntryState = ::core::ffi::c_uchar;
+/// Represents an EID cache entry.
+#[repr(C)]
+#[derive(Copy, Clone)]
+pub struct otCacheEntryInfo {
+    ///< Target EID
+    pub mTarget: otIp6Address,
+    ///< RLOC16
+    pub mRloc16: otShortAddress,
+    ///< Entry state
+    pub mState: otCacheEntryState,
+    pub _bitfield_align_1: [u8; 0],
+    pub _bitfield_1: __BindgenBitfieldUnit<[u8; 1usize]>,
+    ///< Last transaction time (applicable in cached state).
+    pub mLastTransTime: u32,
+    ///< Mesh Local EID (applicable if entry in cached state).
+    pub mMeshLocalEid: otIp6Address,
+    ///< Timeout in seconds (applicable if in snooped/query/retry-query states).
+    pub mTimeout: u16,
+    ///< Retry delay in seconds (applicable if in query-retry state).
+    pub mRetryDelay: u16,
+}
+impl Default for otCacheEntryInfo {
+    fn default() -> Self {
+        let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+impl otCacheEntryInfo {
+    #[inline]
+    pub fn mCanEvict(&self) -> bool {
+        unsafe { ::core::mem::transmute(self._bitfield_1.get(0usize, 1u8) as u8) }
+    }
+    #[inline]
+    pub fn set_mCanEvict(&mut self, val: bool) {
+        unsafe {
+            let val: u8 = ::core::mem::transmute(val);
+            self._bitfield_1.set(0usize, 1u8, val as u64)
+        }
+    }
+    #[inline]
+    pub unsafe fn mCanEvict_raw(this: *const Self) -> bool {
+        unsafe {
+            ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+                ::core::ptr::addr_of!((*this)._bitfield_1),
+                0usize,
+                1u8,
+            ) as u8)
+        }
+    }
+    #[inline]
+    pub unsafe fn set_mCanEvict_raw(this: *mut Self, val: bool) {
+        unsafe {
+            let val: u8 = ::core::mem::transmute(val);
+            <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+                ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+                0usize,
+                1u8,
+                val as u64,
+            )
+        }
+    }
+    #[inline]
+    pub fn mRampDown(&self) -> bool {
+        unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u8) }
+    }
+    #[inline]
+    pub fn set_mRampDown(&mut self, val: bool) {
+        unsafe {
+            let val: u8 = ::core::mem::transmute(val);
+            self._bitfield_1.set(1usize, 1u8, val as u64)
+        }
+    }
+    #[inline]
+    pub unsafe fn mRampDown_raw(this: *const Self) -> bool {
+        unsafe {
+            ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+                ::core::ptr::addr_of!((*this)._bitfield_1),
+                1usize,
+                1u8,
+            ) as u8)
+        }
+    }
+    #[inline]
+    pub unsafe fn set_mRampDown_raw(this: *mut Self, val: bool) {
+        unsafe {
+            let val: u8 = ::core::mem::transmute(val);
+            <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+                ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+                1usize,
+                1u8,
+                val as u64,
+            )
+        }
+    }
+    #[inline]
+    pub fn mValidLastTrans(&self) -> bool {
+        unsafe { ::core::mem::transmute(self._bitfield_1.get(2usize, 1u8) as u8) }
+    }
+    #[inline]
+    pub fn set_mValidLastTrans(&mut self, val: bool) {
+        unsafe {
+            let val: u8 = ::core::mem::transmute(val);
+            self._bitfield_1.set(2usize, 1u8, val as u64)
+        }
+    }
+    #[inline]
+    pub unsafe fn mValidLastTrans_raw(this: *const Self) -> bool {
+        unsafe {
+            ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+                ::core::ptr::addr_of!((*this)._bitfield_1),
+                2usize,
+                1u8,
+            ) as u8)
+        }
+    }
+    #[inline]
+    pub unsafe fn set_mValidLastTrans_raw(this: *mut Self, val: bool) {
+        unsafe {
+            let val: u8 = ::core::mem::transmute(val);
+            <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+                ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+                2usize,
+                1u8,
+                val as u64,
+            )
+        }
+    }
+    #[inline]
+    pub fn new_bitfield_1(
+        mCanEvict: bool,
+        mRampDown: bool,
+        mValidLastTrans: bool,
+    ) -> __BindgenBitfieldUnit<[u8; 1usize]> {
+        let mut __bindgen_bitfield_unit: __BindgenBitfieldUnit<[u8; 1usize]> = Default::default();
+        __bindgen_bitfield_unit.set(0usize, 1u8, {
+            let mCanEvict: u8 = unsafe { ::core::mem::transmute(mCanEvict) };
+            mCanEvict as u64
+        });
+        __bindgen_bitfield_unit.set(1usize, 1u8, {
+            let mRampDown: u8 = unsafe { ::core::mem::transmute(mRampDown) };
+            mRampDown as u64
+        });
+        __bindgen_bitfield_unit.set(2usize, 1u8, {
+            let mValidLastTrans: u8 = unsafe { ::core::mem::transmute(mValidLastTrans) };
+            mValidLastTrans as u64
+        });
+        __bindgen_bitfield_unit
+    }
+}
+/// Represents an iterator used for iterating through the EID cache table entries.
+///
+/// To initialize the iterator and start from the first entry in the cache table, set all its fields in the structure to
+/// zero (e.g., `memset` the iterator to zero).
+#[repr(C)]
+#[derive(Copy, Clone)]
+pub struct otCacheEntryIterator {
+    ///< Opaque data used by the core implementation. Should not be changed by user.
+    pub mData: [*const ::core::ffi::c_void; 2usize],
+}
+impl Default for otCacheEntryIterator {
+    fn default() -> Self {
+        let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+unsafe extern "C" {
+    /// Gets the maximum number of children currently allowed.
+    ///
+    /// @param[in]  aInstance A pointer to an OpenThread instance.
+    ///
+    /// @returns The maximum number of children currently allowed.
+    ///
+    /// @sa otThreadSetMaxAllowedChildren
+    pub fn otThreadGetMaxAllowedChildren(aInstance: *mut otInstance) -> u16;
+}
+unsafe extern "C" {
+    /// Sets the maximum number of children currently allowed.
+    ///
+    /// This parameter can only be set when Thread protocol operation has been stopped.
+    ///
+    /// @param[in]  aInstance     A pointer to an OpenThread instance.
+    /// @param[in]  aMaxChildren  The maximum allowed children.
+    ///
+    /// @retval  OT_ERROR_NONE           Successfully set the max.
+    /// @retval  OT_ERROR_INVALID_ARGS   If @p aMaxChildren is not in the range [1, OPENTHREAD_CONFIG_MLE_MAX_CHILDREN].
+    /// @retval  OT_ERROR_INVALID_STATE  If Thread isn't stopped.
+    ///
+    /// @sa otThreadGetMaxAllowedChildren
+    pub fn otThreadSetMaxAllowedChildren(aInstance: *mut otInstance, aMaxChildren: u16) -> otError;
+}
+unsafe extern "C" {
+    /// Indicates whether or not the device is router-eligible.
+    ///
+    /// @param[in]  aInstance A pointer to an OpenThread instance.
+    ///
+    /// @retval TRUE   If device is router-eligible.
+    /// @retval FALSE  If device is not router-eligible.
+    pub fn otThreadIsRouterEligible(aInstance: *mut otInstance) -> bool;
+}
+unsafe extern "C" {
+    /// Sets whether or not the device is router-eligible.
+    ///
+    /// If @p aEligible is false and the device is currently operating as a router, this call will cause the device to
+    /// detach and attempt to reattach as a child.
+    ///
+    /// @param[in]  aInstance  A pointer to an OpenThread instance.
+    /// @param[in]  aEligible  TRUE to configure the device as router-eligible, FALSE otherwise.
+    ///
+    /// @retval OT_ERROR_NONE         Successfully set the router-eligible configuration.
+    /// @retval OT_ERROR_NOT_CAPABLE  The device is not capable of becoming a router.
+    pub fn otThreadSetRouterEligible(aInstance: *mut otInstance, aEligible: bool) -> otError;
+}
+unsafe extern "C" {
+    /// Set the preferred Router Id.
+    ///
+    /// Upon becoming a router/leader the node attempts to use this Router Id. If the preferred Router Id is not set or if
+    /// it can not be used, a randomly generated router id is picked. This property can be set only when the device role is
+    /// either detached or disabled.
+    ///
+    /// @note This API is reserved for testing and demo purposes only. Changing settings with
+    /// this API will render a production application non-compliant with the Thread Specification.
+    ///
+    /// @param[in]  aInstance    A pointer to an OpenThread instance.
+    /// @param[in]  aRouterId    The preferred Router Id.
+    ///
+    /// @retval OT_ERROR_NONE          Successfully set the preferred Router Id.
+    /// @retval OT_ERROR_INVALID_STATE Could not set (role is not detached or disabled)
+    pub fn otThreadSetPreferredRouterId(aInstance: *mut otInstance, aRouterId: u8) -> otError;
+}
+///< Battery powered.
+pub const otPowerSupply_OT_POWER_SUPPLY_BATTERY: otPowerSupply = 0;
+///< Externally powered (mains-powered).
+pub const otPowerSupply_OT_POWER_SUPPLY_EXTERNAL: otPowerSupply = 1;
+///< Stable external power with a battery backup or UPS.
+pub const otPowerSupply_OT_POWER_SUPPLY_EXTERNAL_STABLE: otPowerSupply = 2;
+///< Potentially unstable ext power (e.g. light bulb powered via a switch).
+pub const otPowerSupply_OT_POWER_SUPPLY_EXTERNAL_UNSTABLE: otPowerSupply = 3;
+/// Represents the power supply property on a device.
+///
+/// This is used as a property in `otDeviceProperties` to calculate the leader weight.
+pub type otPowerSupply = ::core::ffi::c_uchar;
+/// Represents the device properties which are used for calculating the local leader weight on a
+/// device.
+///
+/// The parameters are set based on device's capability, whether acting as border router, its power supply config, etc.
+///
+/// `mIsUnstable` indicates operational stability of device and is determined via a vendor specific mechanism. It can
+/// include the following cases:
+///  - Device internally detects that it loses external power supply more often than usual. What is usual is
+///    determined by the vendor.
+///  - Device internally detects that it reboots more often than usual. What is usual is determined by the vendor.
+#[repr(C)]
+#[derive(Copy, Clone)]
+pub struct otDeviceProperties {
+    ///< Power supply config.
+    pub mPowerSupply: otPowerSupply,
+    pub _bitfield_align_1: [u8; 0],
+    pub _bitfield_1: __BindgenBitfieldUnit<[u8; 1usize]>,
+    ///< Weight adjustment. Should be -16 to +16 (clamped otherwise).
+    pub mLeaderWeightAdjustment: i8,
+}
+impl Default for otDeviceProperties {
+    fn default() -> Self {
+        let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+impl otDeviceProperties {
+    #[inline]
+    pub fn mIsBorderRouter(&self) -> bool {
+        unsafe { ::core::mem::transmute(self._bitfield_1.get(0usize, 1u8) as u8) }
+    }
+    #[inline]
+    pub fn set_mIsBorderRouter(&mut self, val: bool) {
+        unsafe {
+            let val: u8 = ::core::mem::transmute(val);
+            self._bitfield_1.set(0usize, 1u8, val as u64)
+        }
+    }
+    #[inline]
+    pub unsafe fn mIsBorderRouter_raw(this: *const Self) -> bool {
+        unsafe {
+            ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+                ::core::ptr::addr_of!((*this)._bitfield_1),
+                0usize,
+                1u8,
+            ) as u8)
+        }
+    }
+    #[inline]
+    pub unsafe fn set_mIsBorderRouter_raw(this: *mut Self, val: bool) {
+        unsafe {
+            let val: u8 = ::core::mem::transmute(val);
+            <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+                ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+                0usize,
+                1u8,
+                val as u64,
+            )
+        }
+    }
+    #[inline]
+    pub fn mSupportsCcm(&self) -> bool {
+        unsafe { ::core::mem::transmute(self._bitfield_1.get(1usize, 1u8) as u8) }
+    }
+    #[inline]
+    pub fn set_mSupportsCcm(&mut self, val: bool) {
+        unsafe {
+            let val: u8 = ::core::mem::transmute(val);
+            self._bitfield_1.set(1usize, 1u8, val as u64)
+        }
+    }
+    #[inline]
+    pub unsafe fn mSupportsCcm_raw(this: *const Self) -> bool {
+        unsafe {
+            ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+                ::core::ptr::addr_of!((*this)._bitfield_1),
+                1usize,
+                1u8,
+            ) as u8)
+        }
+    }
+    #[inline]
+    pub unsafe fn set_mSupportsCcm_raw(this: *mut Self, val: bool) {
+        unsafe {
+            let val: u8 = ::core::mem::transmute(val);
+            <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+                ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+                1usize,
+                1u8,
+                val as u64,
+            )
+        }
+    }
+    #[inline]
+    pub fn mIsUnstable(&self) -> bool {
+        unsafe { ::core::mem::transmute(self._bitfield_1.get(2usize, 1u8) as u8) }
+    }
+    #[inline]
+    pub fn set_mIsUnstable(&mut self, val: bool) {
+        unsafe {
+            let val: u8 = ::core::mem::transmute(val);
+            self._bitfield_1.set(2usize, 1u8, val as u64)
+        }
+    }
+    #[inline]
+    pub unsafe fn mIsUnstable_raw(this: *const Self) -> bool {
+        unsafe {
+            ::core::mem::transmute(<__BindgenBitfieldUnit<[u8; 1usize]>>::raw_get(
+                ::core::ptr::addr_of!((*this)._bitfield_1),
+                2usize,
+                1u8,
+            ) as u8)
+        }
+    }
+    #[inline]
+    pub unsafe fn set_mIsUnstable_raw(this: *mut Self, val: bool) {
+        unsafe {
+            let val: u8 = ::core::mem::transmute(val);
+            <__BindgenBitfieldUnit<[u8; 1usize]>>::raw_set(
+                ::core::ptr::addr_of_mut!((*this)._bitfield_1),
+                2usize,
+                1u8,
+                val as u64,
+            )
+        }
+    }
+    #[inline]
+    pub fn new_bitfield_1(
+        mIsBorderRouter: bool,
+        mSupportsCcm: bool,
+        mIsUnstable: bool,
+    ) -> __BindgenBitfieldUnit<[u8; 1usize]> {
+        let mut __bindgen_bitfield_unit: __BindgenBitfieldUnit<[u8; 1usize]> = Default::default();
+        __bindgen_bitfield_unit.set(0usize, 1u8, {
+            let mIsBorderRouter: u8 = unsafe { ::core::mem::transmute(mIsBorderRouter) };
+            mIsBorderRouter as u64
+        });
+        __bindgen_bitfield_unit.set(1usize, 1u8, {
+            let mSupportsCcm: u8 = unsafe { ::core::mem::transmute(mSupportsCcm) };
+            mSupportsCcm as u64
+        });
+        __bindgen_bitfield_unit.set(2usize, 1u8, {
+            let mIsUnstable: u8 = unsafe { ::core::mem::transmute(mIsUnstable) };
+            mIsUnstable as u64
+        });
+        __bindgen_bitfield_unit
+    }
+}
+unsafe extern "C" {
+    /// Get the current device properties.
+    ///
+    /// Requires `OPENTHREAD_CONFIG_THREAD_VERSION >= OT_THREAD_VERSION_1_3_1`.
+    ///
+    /// @returns The device properties `otDeviceProperties`.
+    pub fn otThreadGetDeviceProperties(aInstance: *mut otInstance) -> *const otDeviceProperties;
+}
+unsafe extern "C" {
+    /// Set the device properties which are then used to determine and set the Leader Weight.
+    ///
+    /// Requires `OPENTHREAD_CONFIG_THREAD_VERSION >= OT_THREAD_VERSION_1_3_1`.
+    ///
+    /// @param[in]  aInstance           A pointer to an OpenThread instance.
+    /// @param[in]  aDeviceProperties   The device properties.
+    pub fn otThreadSetDeviceProperties(
+        aInstance: *mut otInstance,
+        aDeviceProperties: *const otDeviceProperties,
+    );
+}
+unsafe extern "C" {
+    /// Gets the Thread Leader Weight used when operating in the Leader role.
+    ///
+    /// @param[in]  aInstance A pointer to an OpenThread instance.
+    ///
+    /// @returns The Thread Leader Weight value.
+    ///
+    /// @sa otThreadSetLeaderWeight
+    /// @sa otThreadSetDeviceProperties
+    pub fn otThreadGetLocalLeaderWeight(aInstance: *mut otInstance) -> u8;
+}
+unsafe extern "C" {
+    /// Sets the Thread Leader Weight used when operating in the Leader role.
+    ///
+    /// Directly sets the Leader Weight to the new value, replacing its previous value (which may have been
+    /// determined from the current `otDeviceProperties`).
+    ///
+    /// @param[in]  aInstance A pointer to an OpenThread instance.
+    /// @param[in]  aWeight   The Thread Leader Weight value.
+    ///
+    /// @sa otThreadGetLeaderWeight
+    pub fn otThreadSetLocalLeaderWeight(aInstance: *mut otInstance, aWeight: u8);
+}
+unsafe extern "C" {
+    /// Get the preferred Thread Leader Partition Id used when operating in the Leader role.
+    ///
+    /// @param[in]  aInstance A pointer to an OpenThread instance.
+    ///
+    /// @returns The Thread Leader Partition Id value.
+    pub fn otThreadGetPreferredLeaderPartitionId(aInstance: *mut otInstance) -> u32;
+}
+unsafe extern "C" {
+    /// Set the preferred Thread Leader Partition Id used when operating in the Leader role.
+    ///
+    /// @param[in]  aInstance     A pointer to an OpenThread instance.
+    /// @param[in]  aPartitionId  The Thread Leader Partition Id value.
+    pub fn otThreadSetPreferredLeaderPartitionId(aInstance: *mut otInstance, aPartitionId: u32);
+}
+unsafe extern "C" {
+    /// Gets the Joiner UDP Port.
+    ///
+    /// @param[in] aInstance A pointer to an OpenThread instance.
+    ///
+    /// @returns The Joiner UDP Port number.
+    ///
+    /// @sa otThreadSetJoinerUdpPort
+    pub fn otThreadGetJoinerUdpPort(aInstance: *mut otInstance) -> u16;
+}
+unsafe extern "C" {
+    /// Sets the Joiner UDP Port.
+    ///
+    /// @param[in]  aInstance       A pointer to an OpenThread instance.
+    /// @param[in]  aJoinerUdpPort  The Joiner UDP Port number.
+    ///
+    /// @retval  OT_ERROR_NONE  Successfully set the Joiner UDP Port.
+    ///
+    /// @sa otThreadGetJoinerUdpPort
+    pub fn otThreadSetJoinerUdpPort(aInstance: *mut otInstance, aJoinerUdpPort: u16) -> otError;
+}
+unsafe extern "C" {
+    /// Set Steering data out of band.
+    ///
+    /// Configuration option `OPENTHREAD_CONFIG_MLE_STEERING_DATA_SET_OOB_ENABLE` should be set to enable setting of steering
+    /// data out of band.
+    ///
+    /// @param[in]  aInstance       A pointer to an OpenThread instance.
+    /// @param[in]  aExtAddress     Address used to update the steering data.
+    ///                             All zeros to clear the steering data (no steering data).
+    ///                             All 0xFFs to set steering data/bloom filter to accept/allow all.
+    ///                             A specific EUI64 which is then added to current steering data/bloom filter.
+    pub fn otThreadSetSteeringData(aInstance: *mut otInstance, aExtAddress: *const otExtAddress);
+}
+unsafe extern "C" {
+    /// Get the CONTEXT_ID_REUSE_DELAY parameter used in the Leader role.
+    ///
+    /// @param[in]  aInstance A pointer to an OpenThread instance.
+    ///
+    /// @returns The CONTEXT_ID_REUSE_DELAY value.
+    ///
+    /// @sa otThreadSetContextIdReuseDelay
+    pub fn otThreadGetContextIdReuseDelay(aInstance: *mut otInstance) -> u32;
+}
+unsafe extern "C" {
+    /// Set the CONTEXT_ID_REUSE_DELAY parameter used in the Leader role.
+    ///
+    /// @note This API is reserved for testing and demo purposes only. Changing settings with
+    /// this API will render a production application non-compliant with the Thread Specification.
+    ///
+    /// @param[in]  aInstance A pointer to an OpenThread instance.
+    /// @param[in]  aDelay    The CONTEXT_ID_REUSE_DELAY value.
+    ///
+    /// @sa otThreadGetContextIdReuseDelay
+    pub fn otThreadSetContextIdReuseDelay(aInstance: *mut otInstance, aDelay: u32);
+}
+unsafe extern "C" {
+    /// Get the NETWORK_ID_TIMEOUT parameter used in the Router role.
+    ///
+    /// @note This API is reserved for testing and demo purposes only. Changing settings with
+    /// this API will render a production application non-compliant with the Thread Specification.
+    ///
+    /// @param[in]  aInstance A pointer to an OpenThread instance.
+    ///
+    /// @returns The NETWORK_ID_TIMEOUT value.
+    ///
+    /// @sa otThreadSetNetworkIdTimeout
+    pub fn otThreadGetNetworkIdTimeout(aInstance: *mut otInstance) -> u8;
+}
+unsafe extern "C" {
+    /// Set the NETWORK_ID_TIMEOUT parameter used in the Leader role.
+    ///
+    /// @param[in]  aInstance A pointer to an OpenThread instance.
+    /// @param[in]  aTimeout  The NETWORK_ID_TIMEOUT value.
+    ///
+    /// @sa otThreadGetNetworkIdTimeout
+    pub fn otThreadSetNetworkIdTimeout(aInstance: *mut otInstance, aTimeout: u8);
+}
+unsafe extern "C" {
+    /// Get the ROUTER_UPGRADE_THRESHOLD parameter used in the REED role.
+    ///
+    /// @param[in]  aInstance A pointer to an OpenThread instance.
+    ///
+    /// @returns The ROUTER_UPGRADE_THRESHOLD value.
+    ///
+    /// @sa otThreadSetRouterUpgradeThreshold
+    pub fn otThreadGetRouterUpgradeThreshold(aInstance: *mut otInstance) -> u8;
+}
+unsafe extern "C" {
+    /// Set the ROUTER_UPGRADE_THRESHOLD parameter used in the Leader role.
+    ///
+    /// @note This API is reserved for testing and demo purposes only. Changing settings with
+    /// this API will render a production application non-compliant with the Thread Specification.
+    ///
+    /// @param[in]  aInstance   A pointer to an OpenThread instance.
+    /// @param[in]  aThreshold  The ROUTER_UPGRADE_THRESHOLD value.
+    ///
+    /// @sa otThreadGetRouterUpgradeThreshold
+    pub fn otThreadSetRouterUpgradeThreshold(aInstance: *mut otInstance, aThreshold: u8);
+}
+unsafe extern "C" {
+    /// Get the MLE_CHILD_ROUTER_LINKS parameter used in the REED role.
+    ///
+    /// This parameter specifies the max number of neighboring routers with which the device (as an FED)
+    ///  will try to establish link.
+    ///
+    /// @param[in]  aInstance A pointer to an OpenThread instance.
+    ///
+    /// @returns The MLE_CHILD_ROUTER_LINKS value.
+    ///
+    /// @sa otThreadSetChildRouterLinks
+    pub fn otThreadGetChildRouterLinks(aInstance: *mut otInstance) -> u8;
+}
+unsafe extern "C" {
+    /// Set the MLE_CHILD_ROUTER_LINKS parameter used in the REED role.
+    ///
+    /// @param[in]  aInstance         A pointer to an OpenThread instance.
+    /// @param[in]  aChildRouterLinks The MLE_CHILD_ROUTER_LINKS value.
+    ///
+    /// @retval OT_ERROR_NONE           Successfully set the value.
+    /// @retval OT_ERROR_INVALID_STATE  Thread protocols are enabled.
+    ///
+    /// @sa otThreadGetChildRouterLinks
+    pub fn otThreadSetChildRouterLinks(
+        aInstance: *mut otInstance,
+        aChildRouterLinks: u8,
+    ) -> otError;
+}
+unsafe extern "C" {
+    /// Release a Router ID that has been allocated by the device in the Leader role.
+    ///
+    /// @note This API is reserved for testing and demo purposes only. Changing settings with
+    /// this API will render a production application non-compliant with the Thread Specification.
+    ///
+    /// @param[in]  aInstance  A pointer to an OpenThread instance.
+    /// @param[in]  aRouterId  The Router ID to release. Valid range is [0, 62].
+    ///
+    /// @retval OT_ERROR_NONE           Successfully released the router id.
+    /// @retval OT_ERROR_INVALID_ARGS   @p aRouterId is not in the range [0, 62].
+    /// @retval OT_ERROR_INVALID_STATE  The device is not currently operating as a leader.
+    /// @retval OT_ERROR_NOT_FOUND      The router id is not currently allocated.
+    pub fn otThreadReleaseRouterId(aInstance: *mut otInstance, aRouterId: u8) -> otError;
+}
+unsafe extern "C" {
+    /// Attempt to become a router.
+    ///
+    /// @note This API is reserved for testing and demo purposes only. Changing settings with
+    /// this API will render a production application non-compliant with the Thread Specification.
+    ///
+    /// @param[in]  aInstance A pointer to an OpenThread instance.
+    ///
+    /// @retval OT_ERROR_NONE           Successfully begin attempt to become a router.
+    /// @retval OT_ERROR_INVALID_STATE  Thread is disabled.
+    pub fn otThreadBecomeRouter(aInstance: *mut otInstance) -> otError;
+}
+unsafe extern "C" {
+    /// Become a leader and start a new partition.
+    ///
+    /// @note This API is reserved for testing and demo purposes only. Changing settings with
+    /// this API will render a production application non-compliant with the Thread Specification.
+    ///
+    /// @param[in]  aInstance A pointer to an OpenThread instance.
+    ///
+    /// @retval OT_ERROR_NONE           Successfully became a leader and started a new partition.
+    /// @retval OT_ERROR_INVALID_STATE  Thread is disabled.
+    pub fn otThreadBecomeLeader(aInstance: *mut otInstance) -> otError;
+}
+unsafe extern "C" {
+    /// Get the ROUTER_DOWNGRADE_THRESHOLD parameter used in the Router role.
+    ///
+    /// @param[in]  aInstance  A pointer to an OpenThread instance.
+    ///
+    /// @returns The ROUTER_DOWNGRADE_THRESHOLD value.
+    ///
+    /// @sa otThreadSetRouterDowngradeThreshold
+    pub fn otThreadGetRouterDowngradeThreshold(aInstance: *mut otInstance) -> u8;
+}
+unsafe extern "C" {
+    /// Set the ROUTER_DOWNGRADE_THRESHOLD parameter used in the Leader role.
+    ///
+    /// @note This API is reserved for testing and demo purposes only. Changing settings with
+    /// this API will render a production application non-compliant with the Thread Specification.
+    ///
+    /// @param[in]  aInstance   A pointer to an OpenThread instance.
+    /// @param[in]  aThreshold  The ROUTER_DOWNGRADE_THRESHOLD value.
+    ///
+    /// @sa otThreadGetRouterDowngradeThreshold
+    pub fn otThreadSetRouterDowngradeThreshold(aInstance: *mut otInstance, aThreshold: u8);
+}
+unsafe extern "C" {
+    /// Get the ROUTER_SELECTION_JITTER parameter used in the REED/Router role.
+    ///
+    /// @param[in]  aInstance   A pointer to an OpenThread instance.
+    ///
+    /// @returns The ROUTER_SELECTION_JITTER value.
+    ///
+    /// @sa otThreadSetRouterSelectionJitter
+    pub fn otThreadGetRouterSelectionJitter(aInstance: *mut otInstance) -> u8;
+}
+unsafe extern "C" {
+    /// Set the ROUTER_SELECTION_JITTER parameter used in the REED/Router role.
+    ///
+    /// @note This API is reserved for testing and demo purposes only. Changing settings with
+    /// this API will render a production application non-compliant with the Thread Specification.
+    ///
+    /// @param[in]  aInstance      A pointer to an OpenThread instance.
+    /// @param[in]  aRouterJitter  The ROUTER_SELECTION_JITTER value.
+    ///
+    /// @sa otThreadGetRouterSelectionJitter
+    pub fn otThreadSetRouterSelectionJitter(aInstance: *mut otInstance, aRouterJitter: u8);
+}
+unsafe extern "C" {
+    /// Gets diagnostic information for an attached Child by its Child ID or RLOC16.
+    ///
+    /// @param[in]   aInstance   A pointer to an OpenThread instance.
+    /// @param[in]   aChildId    The Child ID or RLOC16 for the attached child.
+    /// @param[out]  aChildInfo  A pointer to where the child information is placed.
+    ///
+    /// @retval OT_ERROR_NONE          @p aChildInfo was successfully updated with the info for the given ID.
+    /// @retval OT_ERROR_NOT_FOUND     No valid child with this Child ID.
+    /// @retval OT_ERROR_INVALID_ARGS  If @p aChildInfo is NULL.
+    pub fn otThreadGetChildInfoById(
+        aInstance: *mut otInstance,
+        aChildId: u16,
+        aChildInfo: *mut otChildInfo,
+    ) -> otError;
+}
+unsafe extern "C" {
+    /// The function retains diagnostic information for an attached Child by the internal table index.
+    ///
+    /// @param[in]   aInstance    A pointer to an OpenThread instance.
+    /// @param[in]   aChildIndex  The table index.
+    /// @param[out]  aChildInfo   A pointer to where the child information is placed.
+    ///
+    /// @retval OT_ERROR_NONE             @p aChildInfo was successfully updated with the info for the given index.
+    /// @retval OT_ERROR_NOT_FOUND        No valid child at this index.
+    /// @retval OT_ERROR_INVALID_ARGS     Either @p aChildInfo is NULL, or @p aChildIndex is out of range (higher
+    ///                                   than max table index).
+    ///
+    /// @sa otGetMaxAllowedChildren
+    pub fn otThreadGetChildInfoByIndex(
+        aInstance: *mut otInstance,
+        aChildIndex: u16,
+        aChildInfo: *mut otChildInfo,
+    ) -> otError;
+}
+unsafe extern "C" {
+    /// Gets the next IPv6 address (using an iterator) for a given child.
+    ///
+    /// @param[in]      aInstance    A pointer to an OpenThread instance.
+    /// @param[in]      aChildIndex  The child index.
+    /// @param[in,out]  aIterator    A pointer to the iterator. On success the iterator will be updated to point to next
+    ///                              entry in the list. To get the first IPv6 address the iterator should be set to
+    ///                              OT_CHILD_IP6_ADDRESS_ITERATOR_INIT.
+    /// @param[out]     aAddress     A pointer to an IPv6 address where the child's next address is placed (on success).
+    ///
+    /// @retval OT_ERROR_NONE          Successfully found the next IPv6 address (@p aAddress was successfully updated).
+    /// @retval OT_ERROR_NOT_FOUND     The child has no subsequent IPv6 address entry.
+    /// @retval OT_ERROR_INVALID_ARGS  @p aIterator or @p aAddress are NULL, or child at @p aChildIndex is not valid.
+    ///
+    /// @sa otThreadGetChildInfoByIndex
+    pub fn otThreadGetChildNextIp6Address(
+        aInstance: *mut otInstance,
+        aChildIndex: u16,
+        aIterator: *mut otChildIp6AddressIterator,
+        aAddress: *mut otIp6Address,
+    ) -> otError;
+}
+unsafe extern "C" {
+    /// Get the current Router ID Sequence.
+    ///
+    /// @param[in]  aInstance A pointer to an OpenThread instance.
+    ///
+    /// @returns The Router ID Sequence.
+    pub fn otThreadGetRouterIdSequence(aInstance: *mut otInstance) -> u8;
+}
+unsafe extern "C" {
+    /// The function returns the maximum allowed router ID
+    ///
+    /// @param[in]   aInstance    A pointer to an OpenThread instance.
+    ///
+    /// @returns The maximum allowed router ID.
+    pub fn otThreadGetMaxRouterId(aInstance: *mut otInstance) -> u8;
+}
+unsafe extern "C" {
+    /// The function retains diagnostic information for a given Thread Router.
+    ///
+    /// @param[in]   aInstance    A pointer to an OpenThread instance.
+    /// @param[in]   aRouterId    The router ID or RLOC16 for a given router.
+    /// @param[out]  aRouterInfo  A pointer to where the router information is placed.
+    ///
+    /// @retval OT_ERROR_NONE          Successfully retrieved the router info for given id.
+    /// @retval OT_ERROR_NOT_FOUND     No router entry with the given id.
+    /// @retval OT_ERROR_INVALID_ARGS  @p aRouterInfo is NULL.
+    pub fn otThreadGetRouterInfo(
+        aInstance: *mut otInstance,
+        aRouterId: u16,
+        aRouterInfo: *mut otRouterInfo,
+    ) -> otError;
+}
+unsafe extern "C" {
+    /// Gets the next EID cache entry (using an iterator).
+    ///
+    /// @param[in]     aInstance   A pointer to an OpenThread instance.
+    /// @param[out]    aEntryInfo  A pointer to where the EID cache entry information is placed.
+    /// @param[in,out] aIterator   A pointer to an iterator. It will be updated to point to next entry on success. To get
+    ///                            the first entry, initialize the iterator by setting all its fields to zero
+    ///                            (e.g., `memset` the iterator structure to zero).
+    ///
+    /// @retval OT_ERROR_NONE          Successfully populated @p aEntryInfo for next EID cache entry.
+    /// @retval OT_ERROR_NOT_FOUND     No more entries in the address cache table.
+    pub fn otThreadGetNextCacheEntry(
+        aInstance: *mut otInstance,
+        aEntryInfo: *mut otCacheEntryInfo,
+        aIterator: *mut otCacheEntryIterator,
+    ) -> otError;
+}
+unsafe extern "C" {
+    /// Get the Thread PSKc
+    ///
+    /// @param[in]   aInstance   A pointer to an OpenThread instance.
+    /// @param[out]  aPskc       A pointer to an `otPskc` to return the retrieved Thread PSKc.
+    ///
+    /// @sa otThreadSetPskc
+    pub fn otThreadGetPskc(aInstance: *mut otInstance, aPskc: *mut otPskc);
+}
+unsafe extern "C" {
+    /// Get Key Reference to Thread PSKc stored
+    ///
+    /// Requires the build-time feature `OPENTHREAD_CONFIG_PLATFORM_KEY_REFERENCES_ENABLE` to be enabled.
+    ///
+    /// @param[in]   aInstance   A pointer to an OpenThread instance.
+    ///
+    /// @returns Key Reference to PSKc
+    ///
+    /// @sa otThreadSetPskcRef
+    pub fn otThreadGetPskcRef(aInstance: *mut otInstance) -> otPskcRef;
+}
+unsafe extern "C" {
+    /// Set the Thread PSKc
+    ///
+    /// Will only succeed when Thread protocols are disabled.  A successful
+    /// call to this function will also invalidate the Active and Pending Operational Datasets in
+    /// non-volatile memory.
+    ///
+    /// @param[in]  aInstance   A pointer to an OpenThread instance.
+    /// @param[in]  aPskc       A pointer to the new Thread PSKc.
+    ///
+    /// @retval OT_ERROR_NONE           Successfully set the Thread PSKc.
+    /// @retval OT_ERROR_INVALID_STATE  Thread protocols are enabled.
+    ///
+    /// @sa otThreadGetPskc
+    pub fn otThreadSetPskc(aInstance: *mut otInstance, aPskc: *const otPskc) -> otError;
+}
+unsafe extern "C" {
+    /// Set the Thread PSKc
+    ///
+    /// Requires the build-time feature `OPENTHREAD_CONFIG_PLATFORM_KEY_REFERENCES_ENABLE` to be enabled.
+    ///
+    /// Will only succeed when Thread protocols are disabled.  A successful
+    /// call to this function will also invalidate the Active and Pending Operational Datasets in
+    /// non-volatile memory.
+    ///
+    /// @param[in]  aInstance   A pointer to an OpenThread instance.
+    /// @param[in]  aKeyRef     Key Reference to the new Thread PSKc.
+    ///
+    /// @retval OT_ERROR_NONE           Successfully set the Thread PSKc.
+    /// @retval OT_ERROR_INVALID_STATE  Thread protocols are enabled.
+    ///
+    /// @sa otThreadGetPskcRef
+    pub fn otThreadSetPskcRef(aInstance: *mut otInstance, aKeyRef: otPskcRef) -> otError;
+}
+unsafe extern "C" {
+    /// Get the assigned parent priority.
+    ///
+    /// @param[in]   aInstance   A pointer to an OpenThread instance.
+    ///
+    /// @returns The assigned parent priority value, -2 means not assigned.
+    ///
+    /// @sa otThreadSetParentPriority
+    pub fn otThreadGetParentPriority(aInstance: *mut otInstance) -> i8;
+}
+unsafe extern "C" {
+    /// Set the parent priority.
+    ///
+    /// @note This API is reserved for testing and demo purposes only. Changing settings with
+    /// this API will render a production application non-compliant with the Thread Specification.
+    ///
+    /// @param[in]  aInstance        A pointer to an OpenThread instance.
+    /// @param[in]  aParentPriority  The parent priority value.
+    ///
+    /// @retval OT_ERROR_NONE           Successfully set the parent priority.
+    /// @retval OT_ERROR_INVALID_ARGS   If the parent priority value is not among 1, 0, -1 and -2.
+    ///
+    /// @sa otThreadGetParentPriority
+    pub fn otThreadSetParentPriority(aInstance: *mut otInstance, aParentPriority: i8) -> otError;
+}
+unsafe extern "C" {
+    /// Gets the maximum number of IP addresses that each MTD child may register with this device as parent.
+    ///
+    /// @param[in]  aInstance    A pointer to an OpenThread instance.
+    ///
+    /// @returns The maximum number of IP addresses that each MTD child may register with this device as parent.
+    ///
+    /// @sa otThreadSetMaxChildIpAddresses
+    pub fn otThreadGetMaxChildIpAddresses(aInstance: *mut otInstance) -> u8;
+}
+unsafe extern "C" {
+    /// Sets or restores the maximum number of IP addresses that each MTD child may register with this
+    /// device as parent.
+    ///
+    /// Pass `0` to clear the setting and restore the default.
+    ///
+    /// Available when `OPENTHREAD_CONFIG_REFERENCE_DEVICE_ENABLE` is enabled.
+    ///
+    /// @note Only used by Thread Test Harness to limit the address registrations of the reference
+    /// parent in order to test the MTD DUT reaction.
+    ///
+    /// @param[in]  aInstance        A pointer to an OpenThread instance.
+    /// @param[in]  aMaxIpAddresses  The maximum number of IP addresses that each MTD child may register with this
+    ///                              device as parent. 0 to clear the setting and restore the default.
+    ///
+    /// @retval OT_ERROR_NONE           Successfully set/cleared the number.
+    /// @retval OT_ERROR_INVALID_ARGS   If exceeds the allowed maximum number.
+    ///
+    /// @sa otThreadGetMaxChildIpAddresses
+    pub fn otThreadSetMaxChildIpAddresses(
+        aInstance: *mut otInstance,
+        aMaxIpAddresses: u8,
+    ) -> otError;
+}
+///< A child is being added.
+pub const otNeighborTableEvent_OT_NEIGHBOR_TABLE_EVENT_CHILD_ADDED: otNeighborTableEvent = 0;
+///< A child is being removed.
+pub const otNeighborTableEvent_OT_NEIGHBOR_TABLE_EVENT_CHILD_REMOVED: otNeighborTableEvent = 1;
+///< An existing child's mode is changed.
+pub const otNeighborTableEvent_OT_NEIGHBOR_TABLE_EVENT_CHILD_MODE_CHANGED: otNeighborTableEvent = 2;
+///< A router is being added.
+pub const otNeighborTableEvent_OT_NEIGHBOR_TABLE_EVENT_ROUTER_ADDED: otNeighborTableEvent = 3;
+///< A router is being removed.
+pub const otNeighborTableEvent_OT_NEIGHBOR_TABLE_EVENT_ROUTER_REMOVED: otNeighborTableEvent = 4;
+/// Defines the constants used in `otNeighborTableCallback` to indicate changes in neighbor table.
+pub type otNeighborTableEvent = ::core::ffi::c_uchar;
+/// Represent a neighbor table entry info (child or router) and is used as a parameter in the neighbor table
+/// callback `otNeighborTableCallback`.
+#[repr(C)]
+#[derive(Copy, Clone)]
+pub struct otNeighborTableEntryInfo {
+    ///< The OpenThread instance.
+    pub mInstance: *mut otInstance,
+    pub mInfo: otNeighborTableEntryInfo__bindgen_ty_1,
+}
+#[repr(C)]
+#[derive(Copy, Clone)]
+pub union otNeighborTableEntryInfo__bindgen_ty_1 {
+    ///< The child neighbor info.
+    pub mChild: otChildInfo,
+    ///< The router neighbor info.
+    pub mRouter: otNeighborInfo,
+}
+impl Default for otNeighborTableEntryInfo__bindgen_ty_1 {
+    fn default() -> Self {
+        let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+impl Default for otNeighborTableEntryInfo {
+    fn default() -> Self {
+        let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
+/// Pointer is called to notify that there is a change in the neighbor table.
+///
+/// @param[in]  aEvent      A event flag.
+/// @param[in]  aEntryInfo  A pointer to table entry info.
+pub type otNeighborTableCallback = ::core::option::Option<
+    unsafe extern "C" fn(aEvent: otNeighborTableEvent, aEntryInfo: *const otNeighborTableEntryInfo),
+>;
+unsafe extern "C" {
+    /// Registers a neighbor table callback function.
+    ///
+    /// The provided callback (if non-NULL) will be invoked when there is a change in the neighbor table (e.g., a child or a
+    /// router neighbor entry is being added/removed or an existing child's mode is changed).
+    ///
+    /// Subsequent calls to this method will overwrite the previous callback.  Note that this callback in invoked while the
+    /// neighbor/child table is being updated and always before the `otStateChangedCallback`.
+    ///
+    /// @param[in] aInstance  A pointer to an OpenThread instance.
+    /// @param[in] aCallback  A pointer to callback handler function.
+    pub fn otThreadRegisterNeighborTableCallback(
+        aInstance: *mut otInstance,
+        aCallback: otNeighborTableCallback,
+    );
+}
+unsafe extern "C" {
+    /// Sets whether the device was commissioned using CCM.
+    ///
+    /// @note This API requires `OPENTHREAD_CONFIG_REFERENCE_DEVICE_ENABLE`, and is only used by Thread Test Harness
+    ///       to indicate whether this device was commissioned using CCM.
+    ///
+    /// @param[in]  aInstance  A pointer to an OpenThread instance.
+    /// @param[in]  aEnabled   TRUE if the device was commissioned using CCM, FALSE otherwise.
+    pub fn otThreadSetCcmEnabled(aInstance: *mut otInstance, aEnabled: bool);
+}
+unsafe extern "C" {
+    /// Sets whether the Security Policy TLV version-threshold for routing (VR field) is enabled.
+    ///
+    /// @note This API requires `OPENTHREAD_CONFIG_REFERENCE_DEVICE_ENABLE`, and is only used by Thread Test Harness
+    ///       to indicate that thread protocol version check VR should be skipped.
+    ///
+    /// @param[in]  aInstance  A pointer to an OpenThread instance.
+    /// @param[in]  aEnabled   TRUE to enable Security Policy TLV version-threshold for routing, FALSE otherwise.
+    pub fn otThreadSetThreadVersionCheckEnabled(aInstance: *mut otInstance, aEnabled: bool);
+}
+unsafe extern "C" {
+    /// Gets the range of router IDs that are allowed to assign to nodes within the thread network.
+    ///
+    /// @note This API requires `OPENTHREAD_CONFIG_REFERENCE_DEVICE_ENABLE`, and is only used for test purpose. All the
+    /// router IDs in the range [aMinRouterId, aMaxRouterId] are allowed.
+    ///
+    /// @param[in]   aInstance     A pointer to an OpenThread instance.
+    /// @param[out]  aMinRouterId  The minimum router ID.
+    /// @param[out]  aMaxRouterId  The maximum router ID.
+    ///
+    /// @sa otThreadSetRouterIdRange
+    pub fn otThreadGetRouterIdRange(
+        aInstance: *mut otInstance,
+        aMinRouterId: *mut u8,
+        aMaxRouterId: *mut u8,
+    );
+}
+unsafe extern "C" {
+    /// Sets the range of router IDs that are allowed to assign to nodes within the thread network.
+    ///
+    /// @note This API requires `OPENTHREAD_CONFIG_REFERENCE_DEVICE_ENABLE`, and is only used for test purpose. All the
+    /// router IDs in the range [aMinRouterId, aMaxRouterId] are allowed.
+    ///
+    /// @param[in]  aInstance     A pointer to an OpenThread instance.
+    /// @param[in]  aMinRouterId  The minimum router ID.
+    /// @param[in]  aMaxRouterId  The maximum router ID.
+    ///
+    /// @retval  OT_ERROR_NONE           Successfully set the range.
+    /// @retval  OT_ERROR_INVALID_ARGS   aMinRouterId > aMaxRouterId, or the range is not covered by [0, 62].
+    ///
+    /// @sa otThreadGetRouterIdRange
+    pub fn otThreadSetRouterIdRange(
+        aInstance: *mut otInstance,
+        aMinRouterId: u8,
+        aMaxRouterId: u8,
+    ) -> otError;
+}
+unsafe extern "C" {
+    /// Indicates whether or not a Router ID is currently allocated.
+    ///
+    /// @param[in]  aInstance     A pointer to an OpenThread instance.
+    /// @param[in]  aRouterId     The router ID to check.
+    ///
+    /// @retval TRUE  The @p aRouterId is allocated.
+    /// @retval FALSE The @p aRouterId is not allocated.
+    pub fn otThreadIsRouterIdAllocated(aInstance: *mut otInstance, aRouterId: u8) -> bool;
+}
+unsafe extern "C" {
+    /// Gets the next hop and path cost towards a given RLOC16 destination.
+    ///
+    /// Can be used with either @p aNextHopRloc16 or @p aPathCost being NULL indicating caller does not want
+    /// to get the value.
+    ///
+    /// @param[in]  aInstance       A pointer to an OpenThread instance.
+    /// @param[in]  aDesRloct16     The RLOC16 of destination.
+    /// @param[out] aNextHopRloc16  A pointer to return RLOC16 of next hop, 0xfffe if no next hop.
+    /// @param[out] aPathCost       A pointer to return path cost towards destination.
+    pub fn otThreadGetNextHopAndPathCost(
+        aInstance: *mut otInstance,
+        aDestRloc16: u16,
+        aNextHopRloc16: *mut u16,
+        aPathCost: *mut u8,
     );
 }
 unsafe extern "C" {

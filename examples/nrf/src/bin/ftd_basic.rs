@@ -32,7 +32,7 @@ use embassy_nrf::{bind_interrupts, peripherals, radio};
 use openthread::nrf::{Ieee802154, NrfRadio};
 use openthread::{
     BytesFmt, DeviceRole, EmbassyTimeTimer, OpenThread, OtResources, OtUdpResources,
-    PhyRadioRunner, ProxyRadio, ProxyRadioResources, SimpleRamSettings, UdpSocket,
+    PhyRadioRunner, ProxyRadio, ProxyRadioResources, Radio, SimpleRamSettings, UdpSocket,
 };
 
 use panic_rtt_target as _;
@@ -108,6 +108,7 @@ async fn main(spawner: Spawner) {
     info!("OpenThread instance created");
 
     // Configure FTD-specific parameters
+    /*
     #[cfg(feature = "ftd")]
     {
         // Set maximum children to a reasonable value for nRF52840 (has ~256KB RAM)
@@ -119,11 +120,12 @@ async fn main(spawner: Spawner) {
         ot.set_max_child_ip_addresses(4).unwrap();
         info!("Max IP addresses per child set to 4");
     }
+    */
 
     let mut radio = NrfRadio::new(Ieee802154::new(p.RADIO, Irqs));
 
     let proxy_radio_resources = mk_static!(ProxyRadioResources, ProxyRadioResources::new());
-    let (proxy_radio, phy_radio_runner) = ProxyRadio::new(radio.caps(), proxy_radio_resources);
+    let (proxy_radio, phy_radio_runner) = ProxyRadio::new(Radio::caps(&mut radio), proxy_radio_resources);
 
     // High-priority executor for radio operations
     interrupt::EGU0_SWI0.set_priority(Priority::P7);
@@ -164,24 +166,28 @@ async fn main(spawner: Spawner) {
 
         info!("UDP: Received {} from {} on {}", BytesFmt(&buf[..len]), remote, local);
 
-        socket.send(b"Hello from FTD", Some(&local), &remote).await.unwrap();
-        info!("UDP: Sent response");
+        // Check if this is a child announcement broadcast
+        if buf.starts_with(b"Child announcement from") {
+            info!("*** CHILD ANNOUNCEMENT RECEIVED ***");
+            if let Ok(message) = core::str::from_utf8(&buf[..len]) {
+                info!("Message: {}", message);
+            }
+            // Don't send echo response to broadcasts, just log them
+        } else {
+            // Regular echo behavior
+            socket.send(b"Hello from FTD", Some(&local), &remote).await.unwrap();
+            info!("UDP: Sent response");
+        }
     }
 }
 
 #[embassy_executor::task]
-async fn run_radio<R>(mut runner: PhyRadioRunner<'static, R>, radio: R) -> !
-where
-    R: openthread::Radio,
-{
+async fn run_radio(mut runner: PhyRadioRunner<'static>, radio: NrfRadio<'static>) -> ! {
     runner.run(radio, EmbassyTimeTimer).await
 }
 
 #[embassy_executor::task]
-async fn run_ot<R>(ot: OpenThread<'static>, radio: R) -> !
-where
-    R: openthread::Radio,
-{
+async fn run_ot(ot: OpenThread<'static>, radio: ProxyRadio<'static>) -> ! {
     ot.run(radio).await
 }
 
@@ -206,9 +212,16 @@ async fn run_ot_status_monitor(ot: OpenThread<'static>) {
                 DeviceRole::Router => {
                     info!("*** DEVICE IS NOW ROUTER ***");
                     info!("This device joined as router and can accept children");
+
+                    send_child_announcement(ot.clone()).await;
+
                 }
                 DeviceRole::Child => {
-                    info!("Device is a child (should not happen in FTD mode)");
+                    info!("*** DEVICE IS NOW CHILD ***");
+                    info!("This is unusual for FTD mode, but device has joined as a child");
+                    
+                    // Send UDP broadcast announcement
+                    send_child_announcement(ot.clone()).await;
                 }
                 DeviceRole::Detached => {
                     info!("Device detached from network");
@@ -222,7 +235,7 @@ async fn run_ot_status_monitor(ot: OpenThread<'static>) {
             let _ = ot.ipv6_addrs(|addr| {
                 if let Some((ip, prefix)) = addr {
                     if count == 0 {
-                        info!("IPv6 addresses:");
+                        info!("CONNECTED: IPv6 addresses:");
                     }
                     info!("  {}/{}", ip, prefix);
                     count += 1;
@@ -283,11 +296,55 @@ async fn run_ftd_monitor(ot: OpenThread<'static>) {
                 Ok(())
             });
 
-            if neighbor_count > 0 {
-                info!("Total neighbors: {}", neighbor_count);
-            }
-
+            info!("Total neighbors: {}", neighbor_count);
             info!("========================");
         }
+    }
+}
+
+/// Send a UDP broadcast announcement when becoming a child
+///
+/// This function creates a temporary UDP socket and sends a broadcast message
+/// to the Thread realm-local all nodes multicast address (ff03::1) on port 1212.
+/// The message includes the device's RLOC16 for identification.
+async fn send_child_announcement(ot: OpenThread<'static>) {
+    use core::fmt::Write as _;
+    use heapless::String;
+    
+    info!("Sending child announcement broadcast...");
+    
+    // Get RLOC16 for the announcement message
+    let rloc16 = ot.get_rloc16();
+    
+    // Create announcement message
+    let mut message: String<64> = String::new();
+    let _ = write!(message, "Child announcement from 0x{:04X}", rloc16);
+    
+    // Create a temporary UDP socket for sending the broadcast
+    // We don't bind it to a specific port since we're just sending
+    let send_result = async {
+        // Create socket bound to any port (ephemeral port)
+        let socket = UdpSocket::bind(
+            ot.clone(),
+            &SocketAddrV6::new(Ipv6Addr::UNSPECIFIED, 0, 0, 0),
+        )?;
+        
+        // Thread realm-local all nodes multicast address (ff03::1)
+        let broadcast_addr = SocketAddrV6::new(
+            Ipv6Addr::new(0xff03, 0, 0, 0, 0, 0, 0, 1),  // ff03::1
+            BOUND_PORT,  // Port 1212
+            0,
+            0,
+        );
+        
+        // Send the announcement
+        socket.send(message.as_bytes(), None, &broadcast_addr).await?;
+        
+        info!("Child announcement sent to ff03::1:{}", BOUND_PORT);
+        Ok::<(), openthread::OtError>(())
+    }.await;
+    
+    if let Err(e) = send_result {
+        info!("Failed to send child announcement: {:?}", e);
     }
 }

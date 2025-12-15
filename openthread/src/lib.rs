@@ -559,6 +559,23 @@ impl<'a> OpenThread<'a> {
         Ok(())
     }
 
+    /// Get the RLOC16 (Routing Locator) address of this device.
+    ///
+    /// The RLOC16 is a 16-bit address that uniquely identifies a device within the Thread network.
+    /// It consists of:
+    /// - Router ID (upper 6 bits): Identifies the parent router
+    /// - Child ID (lower 10 bits): Identifies the child device
+    ///
+    /// For routers and leaders, the Child ID portion is 0.
+    ///
+    /// # Returns
+    /// The RLOC16 address, or 0xFFFE if the device is not attached to a network.
+    pub fn get_rloc16(&self) -> u16 {
+        let mut ot = self.activate();
+        let state = ot.state();
+        unsafe { sys::otThreadGetRloc16(state.ot.instance) }
+    }
+
     /// Get information about a child device by index (FTD only)
     ///
     /// This method is only available when the `ftd` feature is enabled.
@@ -572,7 +589,7 @@ impl<'a> OpenThread<'a> {
     pub fn get_child_info(&self, index: u16) -> Result<ChildInfo, OtError> {
         let mut ot = self.activate();
         let state = ot.state();
-        router::RouterOps::get_child_info_by_index(state.ot.instance, index)
+        router::get_child_info_by_index(state.ot.instance, index)
     }
 
     /// Iterate over all child devices (FTD only)
@@ -591,7 +608,7 @@ impl<'a> OpenThread<'a> {
 
         let mut index = 0;
         loop {
-            match router::RouterOps::get_child_info_by_index(state.ot.instance, index) {
+            match router::get_child_info_by_index(state.ot.instance, index) {
                 Ok(child) => {
                     f(child)?;
                     index += 1;
@@ -615,7 +632,7 @@ impl<'a> OpenThread<'a> {
     pub fn get_neighbor_info(&self, index: u16) -> Result<NeighborInfo, OtError> {
         let mut ot = self.activate();
         let state = ot.state();
-        router::RouterOps::get_neighbor_info_by_index(state.ot.instance, index)
+        router::get_neighbor_info_by_index(state.ot.instance, index)
     }
 
     /// Iterate over all neighboring devices (FTD only)
@@ -634,7 +651,7 @@ impl<'a> OpenThread<'a> {
 
         let mut index = 0;
         loop {
-            match router::RouterOps::get_neighbor_info_by_index(state.ot.instance, index) {
+            match router::get_neighbor_info_by_index(state.ot.instance, index) {
                 Ok(neighbor) => {
                     f(neighbor)?;
                     index += 1;
@@ -658,7 +675,7 @@ impl<'a> OpenThread<'a> {
     pub fn get_router_info(&self, router_id: u16) -> Result<RouterInfo, OtError> {
         let mut ot = self.activate();
         let state = ot.state();
-        router::RouterOps::get_router_info(state.ot.instance, router_id)
+        router::get_router_info(state.ot.instance, router_id)
     }
 
     /// Get the maximum number of children allowed (FTD only)
@@ -668,7 +685,7 @@ impl<'a> OpenThread<'a> {
     pub fn get_max_allowed_children(&self) -> u16 {
         let mut ot = self.activate();
         let state = ot.state();
-        router::RouterOps::get_max_allowed_children(state.ot.instance)
+        router::get_max_allowed_children(state.ot.instance)
     }
 
     /// Set the maximum number of children allowed (FTD only)
@@ -681,7 +698,7 @@ impl<'a> OpenThread<'a> {
     pub fn set_max_allowed_children(&self, max_children: u16) -> Result<(), OtError> {
         let mut ot = self.activate();
         let state = ot.state();
-        router::RouterOps::set_max_allowed_children(state.ot.instance, max_children)
+        router::set_max_allowed_children(state.ot.instance, max_children)
     }
 
     /// Get the maximum number of IP addresses per child (FTD only)
@@ -691,7 +708,7 @@ impl<'a> OpenThread<'a> {
     pub fn get_max_child_ip_addresses(&self) -> u8 {
         let mut ot = self.activate();
         let state = ot.state();
-        router::RouterOps::get_max_child_ip_addresses(state.ot.instance)
+        router::get_max_child_ip_addresses(state.ot.instance)
     }
 
     /// Set the maximum number of IP addresses per child (FTD only)
@@ -704,7 +721,7 @@ impl<'a> OpenThread<'a> {
     pub fn set_max_child_ip_addresses(&self, max_ip_addresses: u8) -> Result<(), OtError> {
         let mut ot = self.activate();
         let state = ot.state();
-        router::RouterOps::set_max_child_ip_addresses(state.ot.instance, max_ip_addresses)
+        router::set_max_child_ip_addresses(state.ot.instance, max_ip_addresses)
     }
 
     /// Initialize the OpenThread state, by:

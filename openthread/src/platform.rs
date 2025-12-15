@@ -319,3 +319,88 @@ extern "C" fn isprint(v: u32) -> bool {
 extern "C" fn isupper(v: u32) -> bool {
     v >= 'A' as u32 && v <= 'Z' as u32
 }
+
+// String comparison function required by FTD libraries
+#[no_mangle]
+extern "C" fn strncmp(s1: *const c_char, s2: *const c_char, n: usize) -> i32 {
+    if n == 0 {
+        return 0;
+    }
+
+    let mut i = 0;
+    while i < n {
+        let c1 = unsafe { *s1.add(i) };
+        let c2 = unsafe { *s2.add(i) };
+
+        if c1 != c2 {
+            return (c1 as i32) - (c2 as i32);
+        }
+
+        if c1 == 0 {
+            return 0;
+        }
+
+        i += 1;
+    }
+
+    0
+}
+
+// FTD-specific platform radio functions for source address matching
+// These are required for FTD builds but can be stubbed for basic functionality
+#[no_mangle]
+extern "C" fn otPlatRadioEnableSrcMatch(instance: *mut otInstance, enable: bool) -> otError {
+    // Source address matching is an optimization for FTD devices
+    // It helps the radio filter frames more efficiently
+    // For basic FTD functionality, we can return success without implementing it
+    let _ = (instance, enable);
+    otError_OT_ERROR_NONE
+}
+
+#[no_mangle]
+extern "C" fn otPlatRadioAddSrcMatchShortEntry(
+    instance: *mut otInstance,
+    short_address: u16,
+) -> otError {
+    let _ = (instance, short_address);
+    otError_OT_ERROR_NONE
+}
+
+#[no_mangle]
+extern "C" fn otPlatRadioAddSrcMatchExtEntry(
+    instance: *mut otInstance,
+    ext_address: *const u8,
+) -> otError {
+    let _ = (instance, ext_address);
+    otError_OT_ERROR_NONE
+}
+
+#[no_mangle]
+extern "C" fn otPlatRadioClearSrcMatchShortEntry(
+    instance: *mut otInstance,
+    short_address: u16,
+) -> otError {
+    let _ = (instance, short_address);
+    otError_OT_ERROR_NONE
+}
+
+#[no_mangle]
+extern "C" fn otPlatRadioClearSrcMatchExtEntry(
+    instance: *mut otInstance,
+    ext_address: *const u8,
+) -> otError {
+    let _ = (instance, ext_address);
+    otError_OT_ERROR_NONE
+}
+
+#[no_mangle]
+extern "C" fn otPlatRadioClearSrcMatchShortEntries(instance: *mut otInstance) -> otError {
+    let _ = instance;
+    otError_OT_ERROR_NONE
+}
+
+#[no_mangle]
+extern "C" fn otPlatRadioClearSrcMatchExtEntries(instance: *mut otInstance) -> otError {
+    let _ = instance;
+    otError_OT_ERROR_NONE
+}
