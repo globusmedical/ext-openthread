@@ -182,7 +182,10 @@ impl OpenThreadBuilder {
         std::fs::create_dir_all(lib_dir)?;
 
         // Compile OpenThread and generate libraries to link against
-        log::info!("Compiling OpenThread in {} mode", if ftd { "FTD" } else { "MTD" });
+        log::info!(
+            "Compiling OpenThread in {} mode",
+            if ftd { "FTD" } else { "MTD" }
+        );
 
         let mut config = self.cmake_configurer.configure(Some(lib_dir));
 

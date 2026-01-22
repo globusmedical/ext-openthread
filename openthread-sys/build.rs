@@ -19,6 +19,10 @@ fn main() -> Result<()> {
 
     let force_esp_riscv_toolchain = env::var("CARGO_FEATURE_FORCE_ESP_RISCV_TOOLCHAIN").is_ok();
     let ftd = env::var("CARGO_FEATURE_FTD").is_ok();
+    let mtd = env::var("CARGO_FEATURE_MTD").is_ok();
+
+    // Determine which mode to use (FTD takes precedence if both are somehow enabled)
+    let ftd = ftd && !mtd;
 
     let pregen_bindings = env::var("CARGO_FEATURE_FORCE_GENERATE_BINDINGS").is_err();
     let pregen_bindings_rs_file = crate_root_path
@@ -32,7 +36,7 @@ fn main() -> Result<()> {
         let has_ftd_lib = pregen_libs_dir.join("libopenthread-ftd.a").exists();
         let has_mtd_lib = pregen_libs_dir.join("libopenthread-mtd.a").exists();
 
-        let libs_match = (ftd && has_ftd_lib) || (!ftd && has_mtd_lib);
+        let libs_match = if ftd { has_ftd_lib } else { has_mtd_lib };
 
         if libs_match {
             // Use the pre-generated bindings and libraries
@@ -87,7 +91,18 @@ fn main() -> Result<()> {
                     file_name.trim_end_matches(".lib")
                 };
 
-                println!("cargo:rustc-link-lib=static={lib_name}");
+                // Filter out libraries that don't match the selected mode (FTD vs MTD)
+                let skip = if ftd {
+                    // When building for FTD, skip MTD-specific libraries
+                    lib_name.ends_with("-mtd")
+                } else {
+                    // When building for MTD (default), skip FTD-specific libraries
+                    lib_name.ends_with("-ftd")
+                };
+
+                if !skip {
+                    println!("cargo:rustc-link-lib=static={lib_name}");
+                }
             }
         }
     }

@@ -74,13 +74,14 @@ use sys::{
     otDeviceRole_OT_DEVICE_ROLE_LEADER, otDeviceRole_OT_DEVICE_ROLE_ROUTER, otError,
     otError_OT_ERROR_ABORT, otError_OT_ERROR_CHANNEL_ACCESS_FAILURE, otError_OT_ERROR_DROP,
     otError_OT_ERROR_NONE, otError_OT_ERROR_NOT_FOUND, otError_OT_ERROR_NO_ACK,
-    otError_OT_ERROR_NO_BUFS, otInstance, otInstanceFinalize, otInstanceInitSingle, otIp6Address,
-    otIp6GetUnicastAddresses, otIp6IsEnabled, otIp6NewMessageFromBuffer, otIp6Send,
-    otIp6SetEnabled, otIp6SetReceiveCallback, otMessage, otMessageFree,
-    otMessagePriority_OT_MESSAGE_PRIORITY_NORMAL, otMessageRead, otMessageSettings,
-    otOperationalDataset, otOperationalDatasetTlvs, otPlatAlarmMilliFired, otPlatRadioReceiveDone,
-    otPlatRadioTxDone, otPlatRadioTxStarted, otRadioCaps, otRadioFrame, otSetStateChangedCallback,
-    otTaskletsProcess, otThreadGetDeviceRole, otThreadGetExtendedPanId, otThreadSetEnabled,
+    otError_OT_ERROR_NO_BUFS, otExtAddress, otInstance, otInstanceFinalize, otInstanceInitSingle,
+    otIp6Address, otIp6GetUnicastAddresses, otIp6IsEnabled, otIp6NewMessageFromBuffer, otIp6Send,
+    otIp6SetEnabled, otIp6SetReceiveCallback, otLinkGetExtendedAddress, otLinkSetExtendedAddress,
+    otMessage, otMessageFree, otMessagePriority_OT_MESSAGE_PRIORITY_NORMAL, otMessageRead,
+    otMessageSettings, otOperationalDataset, otOperationalDatasetTlvs, otPlatAlarmMilliFired,
+    otPlatRadioReceiveDone, otPlatRadioTxDone, otPlatRadioTxStarted, otRadioCaps, otRadioFrame,
+    otSetStateChangedCallback, otTaskletsProcess, otThreadGetChildTimeout, otThreadGetDeviceRole,
+    otThreadGetExtendedPanId, otThreadSetChildTimeout, otThreadSetEnabled,
     OT_RADIO_CAPS_ACK_TIMEOUT, OT_RADIO_FRAME_MAX_SIZE,
 };
 
@@ -428,6 +429,97 @@ impl<'a> OpenThread<'a> {
         let state = ot.state();
 
         ot!(unsafe { otThreadSetEnabled(state.ot.instance, enable) })
+    }
+
+    /// Get the Thread child timeout (in seconds).
+    ///
+    /// The child timeout is used when the device operates as a Thread Child (MTD).
+    /// When a child device joins a network, it negotiates this timeout value with its parent.
+    /// The parent will consider the child disconnected if no communication is received within
+    /// this timeout period.
+    ///
+    /// # Returns
+    /// The child timeout value in seconds.
+    ///
+    /// # Note
+    /// This should be called before `enable_thread()` to take effect when joining a network.
+    pub fn get_child_timeout(&self) -> u32 {
+        let mut ot = self.activate();
+        let state = ot.state();
+
+        unsafe { otThreadGetChildTimeout(state.ot.instance) }
+    }
+
+    /// Set the Thread child timeout (in seconds).
+    ///
+    /// The child timeout is used when the device operates as a Thread Child (MTD).
+    /// When a child device joins a network, it negotiates this timeout value with its parent.
+    /// The parent will consider the child disconnected if no communication is received within
+    /// this timeout period.
+    ///
+    /// A shorter timeout allows for faster detection of disconnected children, but requires
+    /// the child to poll more frequently, which increases network traffic and power consumption.
+    ///
+    /// # Arguments
+    /// * `timeout_seconds` - The child timeout value in seconds. Common values are:
+    ///   - 30-60 seconds for fast disconnection detection
+    ///   - 240 seconds (default) for balanced operation
+    ///   - Higher values for low-power applications
+    ///
+    /// # Note
+    /// This must be called before `enable_thread()` to take effect when joining a network.
+    /// Changing this value after joining will not affect the current connection.
+    pub fn set_child_timeout(&self, timeout_seconds: u32) {
+        let mut ot = self.activate();
+        let state = ot.state();
+
+        unsafe { otThreadSetChildTimeout(state.ot.instance, timeout_seconds) }
+    }
+
+    /// Sets the IEEE 802.15.4 Extended Address.
+    ///
+    /// This address is used to uniquely identify the device on the Thread network.
+    /// Setting a deterministic Extended Address (e.g., derived from device hardware)
+    /// ensures the device is recognized as the same device across reboots, preventing
+    /// duplicate child entries on parent routers.
+    ///
+    /// # Arguments
+    /// * `address` - The 8-byte IEEE EUI-64 Extended Address
+    ///
+    /// # Errors
+    /// Returns `OtError` if:
+    /// - Thread protocols are already enabled (must be called before `enable_thread()`)
+    /// - The address is invalid
+    ///
+    /// # Note
+    /// **CRITICAL**: This must be called BEFORE `enable_thread()`, otherwise it will fail
+    /// with OT_ERROR_INVALID_STATE.
+    pub fn set_extended_address(&self, address: [u8; 8]) -> Result<(), OtError> {
+        let mut ot = self.activate();
+        let state = ot.state();
+
+        let ext_addr = otExtAddress { m8: address };
+
+        ot!(unsafe {
+            otLinkSetExtendedAddress(state.ot.instance, &ext_addr as *const otExtAddress)
+        })
+    }
+
+    /// Gets the current IEEE 802.15.4 Extended Address.
+    ///
+    /// Returns the Extended Address currently in use by the OpenThread stack.
+    /// This is useful for verifying that `set_extended_address()` was successful.
+    ///
+    /// # Returns
+    /// The 8-byte IEEE EUI-64 Extended Address currently in use.
+    pub fn get_extended_address(&self) -> [u8; 8] {
+        let mut ot = self.activate();
+        let state = ot.state();
+
+        let addr_ptr = unsafe { otLinkGetExtendedAddress(state.ot.instance) };
+        let ext_addr = unsafe { addr_ptr.as_ref().unwrap() };
+
+        ext_addr.m8
     }
 
     /// Gets the list of IPv6 addresses currently assigned to the Thread interface

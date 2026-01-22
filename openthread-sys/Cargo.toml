@@ -13,6 +13,8 @@ rust-version = "1.84"
 
 [features]
 default = []
+# Enable MTD (Minimal Thread Device) support - the default for embedded devices
+mtd = []
 # Enable FTD (Full Thread Device) support instead of MTD (Minimal Thread Device)
 ftd = []
 # Always generate the bindings during build, even if pre-built bindings for the build target are available

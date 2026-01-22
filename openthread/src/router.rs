@@ -109,11 +109,10 @@ mod ftd_ops {
     use super::*;
     use crate::ot;
     use crate::sys::{
-        otChildInfo, otError_OT_ERROR_NONE, otError_OT_ERROR_NOT_FOUND, otInstance,
-        otNeighborInfo, otNeighborInfoIterator, otRouterInfo, otThreadGetChildInfoByIndex,
-        otThreadGetMaxAllowedChildren, otThreadGetMaxChildIpAddresses,
-        otThreadGetNextNeighborInfo, otThreadGetRouterInfo, otThreadSetMaxAllowedChildren,
-        otThreadSetMaxChildIpAddresses,
+        otChildInfo, otError_OT_ERROR_NONE, otError_OT_ERROR_NOT_FOUND, otInstance, otNeighborInfo,
+        otNeighborInfoIterator, otRouterInfo, otThreadGetChildInfoByIndex,
+        otThreadGetMaxAllowedChildren, otThreadGetMaxChildIpAddresses, otThreadGetNextNeighborInfo,
+        otThreadGetRouterInfo, otThreadSetMaxAllowedChildren, otThreadSetMaxChildIpAddresses,
     };
     use core::mem::MaybeUninit;
 
