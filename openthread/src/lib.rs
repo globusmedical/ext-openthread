@@ -699,15 +699,11 @@ impl<'a> OpenThread<'a> {
         let state = ot.state();
 
         let mut index = 0;
-        loop {
-            match router::get_child_info_by_index(state.ot.instance, index) {
-                Ok(child) => {
-                    f(child)?;
-                    index += 1;
-                }
-                Err(_) => break,
-            }
+        while let Ok(child) = router::get_child_info_by_index(state.ot.instance, index) {
+            f(child)?;
+            index += 1;
         }
+
         Ok(())
     }
 
@@ -742,15 +738,11 @@ impl<'a> OpenThread<'a> {
         let state = ot.state();
 
         let mut index = 0;
-        loop {
-            match router::get_neighbor_info_by_index(state.ot.instance, index) {
-                Ok(neighbor) => {
-                    f(neighbor)?;
-                    index += 1;
-                }
-                Err(_) => break,
-            }
+        while let Ok(neighbor) = router::get_neighbor_info_by_index(state.ot.instance, index) {
+            f(neighbor)?;
+            index += 1;
         }
+
         Ok(())
     }
 
