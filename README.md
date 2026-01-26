@@ -98,6 +98,47 @@ probe-rs run --chip nRF52840_xxAA --release --bin ftd_basic --features ftd
 When the `ftd` feature is enabled, additional APIs become available:
 
 ```rust
+// Iterate over child devices
+ot.children(|child| {
+    info!("Child: RLOC16=0x{:04x}, RSSI={}", child.rloc16, child.last_rssi);
+    Ok(())
+})?;
+
+// Iterate over neighboring routers (peer FTDs only, not children)
+ot.neighbors(|neighbor| {
+    info!("Router neighbor: RLOC16=0x{:04x}", neighbor.rloc16);
+    Ok(())
+})?;
+
+// Configure FTD parameters
+ot.set_max_allowed_children(10)?;
+ot.set_max_child_ip_addresses(4)?;
+```
+
+### Link Mode Configuration
+
+Query and control the Thread link mode (available in both MTD and FTD builds):
+
+```rust
+// Query current mode
+let mode = ot.get_link_mode();
+info!("Device type: {}", if mode.device_type_ftd { "FTD" } else { "MTD" });
+info!("RX on when idle: {}", mode.rx_on_when_idle);
+
+// Change to sleepy end device (battery powered)
+ot.set_link_mode(LinkModeConfig::sleepy_end_device())?;
+
+// Or construct manually
+ot.set_link_mode(LinkModeConfig::new(false, false, false))?;
+```
+
+**Note:** OpenThread automatically sets the correct default mode based on
+compile-time flags (`ftd` vs `mtd`). Explicit setting is only needed for
+advanced use cases (e.g., switching to sleepy mode for battery-powered devices).
+
+**Important:** MTD builds cannot set `device_type_ftd = true` (enforced at runtime).
+
+See [examples/nrf/src/bin/ftd_basic.rs](examples/nrf/src/bin/ftd_basic.rs) for a complete FTD example.
 // Configure maximum children
 ot.set_max_allowed_children(10)?;
 

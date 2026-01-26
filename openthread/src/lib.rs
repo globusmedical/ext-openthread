@@ -76,13 +76,14 @@ use sys::{
     otError_OT_ERROR_NONE, otError_OT_ERROR_NOT_FOUND, otError_OT_ERROR_NO_ACK,
     otError_OT_ERROR_NO_BUFS, otExtAddress, otInstance, otInstanceFinalize, otInstanceInitSingle,
     otIp6Address, otIp6GetUnicastAddresses, otIp6IsEnabled, otIp6NewMessageFromBuffer, otIp6Send,
-    otIp6SetEnabled, otIp6SetReceiveCallback, otLinkGetExtendedAddress, otLinkSetExtendedAddress,
-    otMessage, otMessageFree, otMessagePriority_OT_MESSAGE_PRIORITY_NORMAL, otMessageRead,
-    otMessageSettings, otOperationalDataset, otOperationalDatasetTlvs, otPlatAlarmMilliFired,
-    otPlatRadioReceiveDone, otPlatRadioTxDone, otPlatRadioTxStarted, otRadioCaps, otRadioFrame,
-    otSetStateChangedCallback, otTaskletsProcess, otThreadGetChildTimeout, otThreadGetDeviceRole,
-    otThreadGetExtendedPanId, otThreadSetChildTimeout, otThreadSetEnabled,
-    OT_RADIO_CAPS_ACK_TIMEOUT, OT_RADIO_FRAME_MAX_SIZE,
+    otIp6SetEnabled, otIp6SetReceiveCallback, otLinkGetExtendedAddress, otLinkModeConfig,
+    otLinkSetExtendedAddress, otMessage, otMessageFree, otMessagePriority_OT_MESSAGE_PRIORITY_NORMAL,
+    otMessageRead, otMessageSettings, otOperationalDataset, otOperationalDatasetTlvs,
+    otPlatAlarmMilliFired, otPlatRadioReceiveDone, otPlatRadioTxDone, otPlatRadioTxStarted,
+    otRadioCaps, otRadioFrame, otSetStateChangedCallback, otTaskletsProcess,
+    otThreadGetChildTimeout, otThreadGetDeviceRole, otThreadGetExtendedPanId, otThreadGetLinkMode,
+    otThreadSetChildTimeout, otThreadSetEnabled, otThreadSetLinkMode, OT_RADIO_CAPS_ACK_TIMEOUT,
+    OT_RADIO_FRAME_MAX_SIZE,
 };
 
 /// A newtype wrapper over the native OpenThread error type (`otError`).
@@ -666,6 +667,78 @@ impl<'a> OpenThread<'a> {
         let mut ot = self.activate();
         let state = ot.state();
         unsafe { sys::otThreadGetRloc16(state.ot.instance) }
+    }
+
+    /// Get the current Thread link mode configuration
+    ///
+    /// The link mode determines how the device operates in the Thread network:
+    /// - RX-on-when-idle vs sleepy
+    /// - FTD (router-eligible) vs MTD (end device only)
+    /// - Full vs stable network data
+    ///
+    /// OpenThread automatically sets the correct default mode based on compile-time flags:
+    /// - **MTD builds**: RX-on, end device, stable network data
+    /// - **FTD builds**: RX-on, router-eligible, full network data
+    ///
+    /// # Returns
+    /// The current link mode configuration
+    ///
+    /// # Example
+    /// ```no_run
+    /// let mode = ot.get_link_mode();
+    /// info!("Device type: {}", if mode.device_type_ftd { "FTD" } else { "MTD" });
+    /// info!("RX on when idle: {}", mode.rx_on_when_idle);
+    /// info!("Full network data: {}", mode.full_network_data);
+    /// ```
+    pub fn get_link_mode(&self) -> LinkModeConfig {
+        let mut ot = self.activate();
+        let state = ot.state();
+
+        let mode = unsafe { otThreadGetLinkMode(state.ot.instance) };
+        mode.into()
+    }
+
+    /// Set the Thread link mode configuration
+    ///
+    /// Changes the device's operating mode in the Thread network. Some mode changes
+    /// may trigger a network re-attach:
+    /// - Switching between FTD and MTD **always** requires re-attach
+    /// - Switching from RX-on to sleepy mode may require re-attach
+    ///
+    /// **Important Notes:**
+    /// - MTD builds **cannot** set `device_type_ftd = true` (returns `InvalidArgs` error)
+    /// - Link mode can be changed before or after calling `enable_thread()`
+    /// - FTD mode is automatically set correctly based on compile-time feature flags
+    /// - You typically don't need to call this - the defaults are correct!
+    ///
+    /// # Arguments
+    /// * `config` - The desired link mode configuration
+    ///
+    /// # Returns
+    /// * `Ok(())` - Link mode successfully changed
+    /// * `Err(OtError::InvalidArgs)` - Invalid configuration (e.g., MTD build trying to set FTD mode)
+    ///
+    /// # Example
+    /// ```no_run
+    /// // Switch to sleepy end device mode (battery powered)
+    /// ot.set_link_mode(LinkModeConfig::sleepy_end_device())?;
+    ///
+    /// // Or construct manually
+    /// ot.set_link_mode(LinkModeConfig::new(false, false, false))?;
+    /// ```
+    pub fn set_link_mode(&self, config: LinkModeConfig) -> Result<(), OtError> {
+        let mut ot = self.activate();
+        let state = ot.state();
+
+        // Compile-time enforcement: prevent setting FTD mode on MTD builds
+        #[cfg(not(feature = "ftd"))]
+        if config.device_type_ftd {
+            // This will fail at runtime too, but we catch it early with a clear message
+            return Err(OtError::new(sys::otError_OT_ERROR_INVALID_ARGS));
+        }
+
+        let mode: sys::otLinkModeConfig = config.into();
+        ot!(unsafe { otThreadSetLinkMode(state.ot.instance, mode) })
     }
 
     /// Get information about a child device by index (FTD only)
@@ -1362,6 +1435,116 @@ impl From<otDeviceRole> for DeviceRole {
             otDeviceRole_OT_DEVICE_ROLE_ROUTER => Self::Router,
             otDeviceRole_OT_DEVICE_ROLE_LEADER => Self::Leader,
             other => Self::Other(other),
+        }
+    }
+}
+
+/// Link mode configuration
+///
+/// Represents the Thread link mode settings that determine how a device
+/// operates in the Thread network.
+///
+/// The link mode consists of three boolean flags:
+/// - **RX-on-when-idle**: Whether the radio receiver stays on when not transmitting
+/// - **Device type**: FTD (router-eligible) vs MTD (end device only)
+/// - **Network data**: Full network data vs stable subset only
+///
+/// # Default Values
+///
+/// OpenThread automatically sets the correct default mode based on compile-time flags:
+/// - **MTD builds**: `{ rx_on_when_idle: true, device_type_ftd: false, full_network_data: false }`
+/// - **FTD builds**: `{ rx_on_when_idle: true, device_type_ftd: true, full_network_data: true }`
+///
+/// # Examples
+///
+/// ```no_run
+/// // Query current mode
+/// let mode = ot.get_link_mode();
+/// if mode.device_type_ftd {
+///     info!("Running as FTD (router-eligible)");
+/// } else {
+///     info!("Running as MTD (end device)");
+/// }
+///
+/// // Switch to sleepy end device (battery powered)
+/// ot.set_link_mode(LinkModeConfig::sleepy_end_device())?;
+/// ```
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
+pub struct LinkModeConfig {
+    /// Whether the radio receiver stays on when idle
+    ///
+    /// - `true`: RX-on-when-idle (typical for mains-powered devices)
+    /// - `false`: Sleepy End Device (SED) - radio sleeps when idle to save power
+    pub rx_on_when_idle: bool,
+
+    /// Whether this is an FTD (router-eligible) or MTD (end device only)
+    ///
+    /// - `true`: Full Thread Device (FTD) - can become Router/Leader
+    /// - `false`: Minimal Thread Device (MTD) - child only
+    ///
+    /// **Note:** MTD builds cannot set this to `true` (enforced at runtime)
+    pub device_type_ftd: bool,
+
+    /// Whether the device requires full network data or stable subset
+    ///
+    /// - `true`: Full network data (typical for routers)
+    /// - `false`: Stable network data only (typical for end devices)
+    pub full_network_data: bool,
+}
+
+impl LinkModeConfig {
+    /// Create a new link mode configuration
+    pub const fn new(rx_on_when_idle: bool, device_type_ftd: bool, full_network_data: bool) -> Self {
+        Self {
+            rx_on_when_idle,
+            device_type_ftd,
+            full_network_data,
+        }
+    }
+
+    /// Create default MTD link mode (RX-on, end device, stable network data)
+    ///
+    /// This is the default mode for MTD builds.
+    pub const fn mtd() -> Self {
+        Self::new(true, false, false)
+    }
+
+    /// Create default FTD link mode (RX-on, router-eligible, full network data)
+    ///
+    /// This is the default mode for FTD builds.
+    pub const fn ftd() -> Self {
+        Self::new(true, true, true)
+    }
+
+    /// Create sleepy end device mode (RX-off when idle)
+    ///
+    /// Suitable for battery-powered devices that need to conserve power.
+    /// The radio will sleep when not actively transmitting or receiving.
+    pub const fn sleepy_end_device() -> Self {
+        Self::new(false, false, false)
+    }
+}
+
+impl From<sys::otLinkModeConfig> for LinkModeConfig {
+    fn from(mode: sys::otLinkModeConfig) -> Self {
+        Self {
+            rx_on_when_idle: mode.mRxOnWhenIdle(),
+            device_type_ftd: mode.mDeviceType(),
+            full_network_data: mode.mNetworkData(),
+        }
+    }
+}
+
+impl From<LinkModeConfig> for sys::otLinkModeConfig {
+    fn from(config: LinkModeConfig) -> Self {
+        sys::otLinkModeConfig {
+            _bitfield_1: sys::otLinkModeConfig::new_bitfield_1(
+                config.rx_on_when_idle,
+                config.device_type_ftd,
+                config.full_network_data,
+            ),
+            _bitfield_align_1: [],
         }
     }
 }
