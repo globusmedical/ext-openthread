@@ -725,10 +725,13 @@ impl<'a> OpenThread<'a> {
 
     /// Iterate over all neighboring devices (FTD only)
     ///
+    /// This method iterates only over router neighbors (peer FTDs), excluding child devices.
+    /// Children are enumerated separately via the `children()` method.
+    ///
     /// This method is only available when the `ftd` feature is enabled.
     ///
     /// # Arguments
-    /// * `f` - Callback function called for each neighbor
+    /// * `f` - Callback function called for each router neighbor
     #[cfg(feature = "ftd")]
     pub fn neighbors<F>(&self, mut f: F) -> Result<(), OtError>
     where
@@ -739,7 +742,10 @@ impl<'a> OpenThread<'a> {
 
         let mut index = 0;
         while let Ok(neighbor) = router::get_neighbor_info_by_index(state.ot.instance, index) {
-            f(neighbor)?;
+            // Filter: only include router neighbors, not children
+            if !neighbor.is_child {
+                f(neighbor)?;
+            }
             index += 1;
         }
 

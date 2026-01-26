@@ -43,7 +43,10 @@ pub struct ChildInfo {
     pub is_state_valid: bool,
 }
 
-/// Information about a neighboring router
+/// Information about a neighboring router or child device
+///
+/// Note: The `neighbors()` iterator automatically filters to only return router neighbors (is_child=false).
+/// This struct can represent both children and router neighbors when returned from `get_neighbor_info()`.
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "defmt", derive(defmt::Format))]
 pub struct NeighborInfo {
@@ -69,10 +72,12 @@ pub struct NeighborInfo {
     pub message_error_rate: u16,
     /// Is the neighbor an RX-on-when-idle device
     pub rx_on_when_idle: bool,
-    /// Is the neighbor a full thread device
+    /// Is the neighbor a full thread device (FTD)
     pub full_thread_device: bool,
     /// Is the neighbor a full network data device
     pub full_network_data: bool,
+    /// Is this neighbor a child device (true) or a router neighbor (false)
+    pub is_child: bool,
     /// Is link established
     pub link_established: bool,
 }
@@ -154,7 +159,8 @@ mod ftd_ops {
                 rx_on_when_idle: info.mRxOnWhenIdle(),
                 full_thread_device: info.mFullThreadDevice(),
                 full_network_data: info.mFullNetworkData(),
-                link_established: info.mIsChild(),
+                is_child: info.mIsChild(),
+                link_established: true, // If we got this info, the link is established
             }
         }
     }
