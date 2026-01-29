@@ -737,7 +737,7 @@ impl<'a> OpenThread<'a> {
             return Err(OtError::new(sys::otError_OT_ERROR_INVALID_ARGS));
         }
 
-        let mode: sys::otLinkModeConfig = config.into();
+        let mode: otLinkModeConfig = config.into();
         ot!(unsafe { otThreadSetLinkMode(state.ot.instance, mode) })
     }
 
@@ -1526,8 +1526,8 @@ impl LinkModeConfig {
     }
 }
 
-impl From<sys::otLinkModeConfig> for LinkModeConfig {
-    fn from(mode: sys::otLinkModeConfig) -> Self {
+impl From<otLinkModeConfig> for LinkModeConfig {
+    fn from(mode: otLinkModeConfig) -> Self {
         Self {
             rx_on_when_idle: mode.mRxOnWhenIdle(),
             device_type_ftd: mode.mDeviceType(),
@@ -1536,10 +1536,10 @@ impl From<sys::otLinkModeConfig> for LinkModeConfig {
     }
 }
 
-impl From<LinkModeConfig> for sys::otLinkModeConfig {
+impl From<LinkModeConfig> for otLinkModeConfig {
     fn from(config: LinkModeConfig) -> Self {
-        sys::otLinkModeConfig {
-            _bitfield_1: sys::otLinkModeConfig::new_bitfield_1(
+        otLinkModeConfig {
+            _bitfield_1: otLinkModeConfig::new_bitfield_1(
                 config.rx_on_when_idle,
                 config.device_type_ftd,
                 config.full_network_data,
