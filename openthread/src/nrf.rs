@@ -61,7 +61,8 @@ impl Radio for NrfRadio<'_> {
 
     fn mac_caps(&mut self) -> MacCapabilities {
         // The NRF radio does not have any MAC offloading capabilities
-        MacCapabilities::empty()
+        // ... or does it?! Seems like ACKs are handled in hardware. (AE-2026)cd
+        MacCapabilities::TX_ACK | MacCapabilities::RX_ACK
     }
 
     async fn set_config(&mut self, config: &Config) -> Result<(), Self::Error> {
