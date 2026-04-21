@@ -781,7 +781,9 @@ impl Radio for ProxyRadio<'_> {
             req.tx = true;
             req.config = self.config.clone();
             req.psdu.clear();
-            unwrap!(req.psdu.extend_from_slice(psdu));
+            req.psdu
+                .extend_from_slice(psdu)
+                .expect("PSDU capacity exceeded");
 
             trace!("ProxyRadio, transmit request sent: {:?}", req);
 
@@ -973,7 +975,10 @@ impl PhyRadioRunner<'_> {
             // Setting driver configuration resulted in an error, so skip the rest of the processing
             result
         } else {
-            unwrap!(response.psdu.resize_default(response.psdu.capacity()));
+            response
+                .psdu
+                .resize_default(response.psdu.capacity())
+                .expect("PSDU resize failed");
 
             let result = if request.tx {
                 Self::with_cancel(

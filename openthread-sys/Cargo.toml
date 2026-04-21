@@ -2,7 +2,6 @@
 name = "openthread-sys"
 version = "0.1.0"
 edition = "2021"
-resolver = "2"
 categories = ["embedded", "hardware-support"]
 keywords = ["thread", "openthread", "embedded", "embassy"]
 description = "Platform-agnostic, async Rust bindings for OpenThread"
